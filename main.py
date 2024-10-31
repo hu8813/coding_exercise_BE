@@ -14,53 +14,38 @@ templates = Jinja2Templates(directory="templates")
 # Serve static files from the "static" directory
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Database file path
-DATABASE = "events.db"
+# Use a temporary directory for the SQLite database
+DATABASE = os.path.join("/tmp", "events.db")  # Vercel allows write access to /tmp
 
-# Initialize the database connection
 def init_db():
-    try:
-        # Create the database file if it doesn't exist
-        if not os.path.exists(DATABASE):
-            with sqlite3.connect(DATABASE) as conn:
-                cursor = conn.cursor()
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS events (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        sport TEXT NOT NULL,
-                        date TEXT NOT NULL,
-                        time TEXT NOT NULL,
-                        home_team TEXT NOT NULL,
-                        away_team TEXT NOT NULL,
-                        venue TEXT
-                    )
-                ''')
-                conn.commit()
-    except sqlite3.Error as e:
-        print(f"Error initializing database: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database initialization failed.")
+    if not os.path.exists(DATABASE):
+        # Create the database and the table if it doesn't exist
+        with sqlite3.connect(DATABASE) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sport TEXT NOT NULL,
+                    date TEXT NOT NULL,
+                    time TEXT NOT NULL,
+                    home_team TEXT NOT NULL,
+                    away_team TEXT NOT NULL,
+                    venue TEXT
+                )
+            ''')
+            conn.commit()
 
 # Call the initialization function at startup
 @app.on_event("startup")
 def startup_event():
     init_db()
 
-# Main page displaying all events
-@app.get("/", response_class=HTMLResponse)
-async def read_events(request: Request):
-    try:
-        with sqlite3.connect(DATABASE) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM events ORDER BY date ASC, time ASC")
-            rows = cursor.fetchall()
-            events = [{"id": row[0], "sport": row[1], "date": row[2], "time": row[3],
-                       "home_team": row[4], "away_team": row[5], "venue": row[6]} for row in rows]
-        return templates.TemplateResponse("index.html", {"request": request, "events": events})
-    except sqlite3.Error as e:
-        print(f"Database error: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to fetch events.")
+# Display form for adding a new event
+@app.get("/add-event", response_class=HTMLResponse)
+async def add_event_form(request: Request):
+    return templates.TemplateResponse("add_event.html", {"request": request})
 
-# API to handle event-related operations
+# Add error-handling and data validation to the event creation route
 @app.post("/api/event/")
 async def create_event(
     sport: str = Form(...),
@@ -93,9 +78,18 @@ async def create_event(
         print(f"Unexpected error: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
 
-# API endpoint to fetch events
-@app.get("/api/events/")
-async def get_events(sport: Optional[str] = None, date: Optional[str] = None):
+# Display all events
+@app.get("/", response_class=HTMLResponse)
+async def read_events(request: Request):
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM events ORDER BY date ASC, time ASC")
+        rows = cursor.fetchall()
+        events = [{"id": row[0], "sport": row[1], "date": row[2], "time": row[3], "home_team": row[4], "away_team": row[5], "venue": row[6]} for row in rows]
+    return templates.TemplateResponse("index.html", {"request": request, "events": events})
+
+@app.get("/events/")
+async def get_events(request: Request, sport: Optional[str] = None, date: Optional[str] = None):
     query = "SELECT * FROM events"
     params = []
 
@@ -110,37 +104,28 @@ async def get_events(sport: Optional[str] = None, date: Optional[str] = None):
         query += " date = ?"
         params.append(date)
 
-    try:
-        with sqlite3.connect(DATABASE) as conn:
-            cursor = conn.cursor()
-            cursor.execute(query, params)
-            rows = cursor.fetchall()
-            events = [{"id": row[0], "sport": row[1], "date": row[2], "time": row[3],
-                       "home_team": row[4], "away_team": row[5], "venue": row[6]} for row in rows]
-        
-        return events  # Return JSON response for the API
-    except sqlite3.Error as e:
-        print(f"Database error: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to fetch events.")
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        events = [{"id": row[0], "sport": row[1], "date": row[2], "time": row[3], "home_team": row[4], "away_team": row[5], "venue": row[6]} for row in rows]
+    
+    return templates.TemplateResponse("events.html", {"request": request, "events": events})
 
 # Route to get one event by ID
-@app.get("/api/event/{event_id}")
-async def get_event(event_id: int):
-    try:
-        with sqlite3.connect(DATABASE) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM events WHERE id = ?", (event_id,))
-            row = cursor.fetchone()
-            if row is None:
-                raise HTTPException(status_code=404, detail="Event not found")
-            event = {
-                "id": row[0], "sport": row[1], "date": row[2], "time": row[3],
-                "home_team": row[4], "away_team": row[5], "venue": row[6]
-            }
-        return event  # Return JSON response for the API
-    except sqlite3.Error as e:
-        print(f"Database error: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to fetch event.")
+@app.get("/event/{event_id}")
+async def get_event(event_id: int, request: Request):
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM events WHERE id = ?", (event_id,))
+        row = cursor.fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="Event not found")
+        event = {
+            "id": row[0], "sport": row[1], "date": row[2], "time": row[3],
+            "home_team": row[4], "away_team": row[5], "venue": row[6]
+        }
+    return templates.TemplateResponse("event.html", {"request": request, "event": event})
 
 if __name__ == "__main__":
     import uvicorn
