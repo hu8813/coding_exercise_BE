@@ -5,7 +5,6 @@ from fastapi.staticfiles import StaticFiles
 import sqlite3
 import os
 from datetime import datetime
-from contextlib import asynccontextmanager
 from typing import Optional
 
 app = FastAPI()
@@ -18,22 +17,28 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 DATABASE = os.path.join("/tmp", "events.sqlite")  # Vercel allows write access to /tmp
 
 def init_db():
+    # Create the database file if it doesn't exist
     if not os.path.exists(DATABASE):
-        # Create the database and the table if it doesn't exist
-        with sqlite3.connect(DATABASE) as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS events (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    sport TEXT NOT NULL,
-                    date TEXT NOT NULL,
-                    time TEXT NOT NULL,
-                    home_team TEXT NOT NULL,
-                    away_team TEXT NOT NULL,
-                    venue TEXT
-                )
-            ''')
-            conn.commit()
+        open(DATABASE, 'a').close()  # Create the SQLite file
+
+    # Create the table if it doesn't exist
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                sport TEXT NOT NULL,
+                date TEXT NOT NULL,
+                time TEXT NOT NULL,
+                home_team TEXT NOT NULL,
+                away_team TEXT NOT NULL,
+                venue TEXT,
+                event_details TEXT,
+                player_details TEXT,
+                team_details TEXT
+            )
+        ''')
+        conn.commit()
 
 # Call the initialization function at startup
 @app.on_event("startup")
@@ -49,13 +54,22 @@ async def add_event_form(request: Request):
 @app.post("/api/event/")
 async def create_event(
     sport: str = Form(...),
-    date: str = Form(...),
-    time: str = Form(...),
+    date: Optional[str] = Form(None),
+    time: Optional[str] = Form(None),
     home_team: str = Form(...),
     away_team: str = Form(...),
-    venue: str = Form(None)
+    venue: Optional[str] = Form(None),
+    event_details: Optional[str] = Form(None),
+    player_details: Optional[str] = Form(None),
+    team_details: Optional[str] = Form(None)
 ):
     try:
+        # Set default values for date and time if they are not provided
+        if date is None:
+            date = datetime.now().strftime("%Y-%m-%d")
+        if time is None:
+            time = datetime.now().strftime("%H:%M")
+
         # Validate date format (YYYY-MM-DD)
         datetime.strptime(date, "%Y-%m-%d")
         # Validate time format (HH:MM)
@@ -64,9 +78,9 @@ async def create_event(
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO events (sport, date, time, home_team, away_team, venue)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (sport, date, time, home_team, away_team, venue))
+                INSERT INTO events (sport, date, time, home_team, away_team, venue, event_details, player_details, team_details)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (sport, date, time, home_team, away_team, venue, event_details, player_details, team_details))
             conn.commit()
 
         return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
@@ -85,7 +99,14 @@ async def read_events(request: Request):
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM events ORDER BY date ASC, time ASC")
         rows = cursor.fetchall()
-        events = [{"id": row[0], "sport": row[1], "date": row[2], "time": row[3], "home_team": row[4], "away_team": row[5], "venue": row[6]} for row in rows]
+        events = [
+            {
+                "id": row[0], "sport": row[1], "date": row[2], "time": row[3],
+                "home_team": row[4], "away_team": row[5], "venue": row[6],
+                "event_details": row[7], "player_details": row[8], "team_details": row[9]
+            }
+            for row in rows
+        ]
     return templates.TemplateResponse("index.html", {"request": request, "events": events})
 
 @app.get("/events/")
@@ -108,8 +129,15 @@ async def get_events(request: Request, sport: Optional[str] = None, date: Option
         cursor = conn.cursor()
         cursor.execute(query, params)
         rows = cursor.fetchall()
-        events = [{"id": row[0], "sport": row[1], "date": row[2], "time": row[3], "home_team": row[4], "away_team": row[5], "venue": row[6]} for row in rows]
-    
+        events = [
+            {
+                "id": row[0], "sport": row[1], "date": row[2], "time": row[3],
+                "home_team": row[4], "away_team": row[5], "venue": row[6],
+                "event_details": row[7], "player_details": row[8], "team_details": row[9]
+            }
+            for row in rows
+        ]
+
     return templates.TemplateResponse("events.html", {"request": request, "events": events})
 
 # Route to get one event by ID
@@ -123,7 +151,8 @@ async def get_event(event_id: int, request: Request):
             raise HTTPException(status_code=404, detail="Event not found")
         event = {
             "id": row[0], "sport": row[1], "date": row[2], "time": row[3],
-            "home_team": row[4], "away_team": row[5], "venue": row[6]
+            "home_team": row[4], "away_team": row[5], "venue": row[6],
+            "event_details": row[7], "player_details": row[8], "team_details": row[9]
         }
     return templates.TemplateResponse("event.html", {"request": request, "event": event})
 
