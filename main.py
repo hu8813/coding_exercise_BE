@@ -17,20 +17,27 @@ DATABASE = "events.db"
 
 # Initialize the database connection
 def init_db():
-    with sqlite3.connect(DATABASE) as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS events (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                sport TEXT NOT NULL,
-                date TEXT NOT NULL,
-                time TEXT NOT NULL,
-                home_team TEXT NOT NULL,
-                away_team TEXT NOT NULL,
-                venue TEXT
-            )
-        ''')
-        conn.commit()
+    if not os.path.exists(DATABASE):
+        # Create the database and the table if it doesn't exist
+        with sqlite3.connect(DATABASE) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sport TEXT NOT NULL,
+                    date TEXT NOT NULL,
+                    time TEXT NOT NULL,
+                    home_team TEXT NOT NULL,
+                    away_team TEXT NOT NULL,
+                    venue TEXT
+                )
+            ''')
+            conn.commit()
+
+# Call the initialization function at startup
+@app.on_event("startup")
+def startup_event():
+    init_db()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
