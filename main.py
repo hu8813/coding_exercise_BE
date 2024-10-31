@@ -56,8 +56,8 @@ async def create_event(
     conn = await get_db_connection()
     try:
         # Convert date string to a date object
-        event_date = dt.strptime(date, "%Y-%m-%d").date() if date else dt.now().date()
-        event_time = dt.strptime(time, "%H:%M").time() if time else dt.now().time()
+        event_date = dt.strptime(date, "%Y-%m-%d").date()
+        event_time = dt.strptime(time, "%H:%M").time()
         
         # Insert the new event into the database
         await conn.execute(
