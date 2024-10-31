@@ -4,17 +4,179 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sports Events Calendar</title>
-    <link rel="stylesheet" type="text/css" href="/static/styles.css">
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Calendar Style */
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .event-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .event-card:hover {
+            transform: scale(1.05);
+        }
+
+        .event-card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .event-card p {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        /* Event Details Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Form Style */
+        .event-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+            margin: auto;
+        }
+
+        .event-form label {
+            font-size: 0.9rem;
+        }
+
+        .event-form input {
+            padding: 10px;
+            font-size: 0.9rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .event-form button {
+            align-self: flex-start;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .event-form button:hover {
+            background-color: #218838;
+        }
+
+        /* List of Events */
+        .event-list {
+            margin-top: 30px;
+        }
+
+        .event-list h3 {
+            margin-bottom: 10px;
+        }
+
+        .event-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .event-list li {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
     <header>
         <h1>Sports Events Calendar</h1>
-        <button onclick="location.href='/add-event'">Add New Event</button>
+        <button onclick="document.getElementById('eventFormModal').style.display='block'">Add New Event</button>
     </header>
     
     <section class="calendar">
         {% for event in events %}
-        <div class="event-card">
+        <div class="event-card" onclick="openEventDetails({{ event.id }})">
             <h2>{{ event.sport }}</h2>
             <p><strong>{{ event.date }}</strong> at <strong>{{ event.time }}</strong></p>
             <p>{{ event.home_team }} vs {{ event.away_team }}</p>
@@ -22,5 +184,84 @@
         </div>
         {% endfor %}
     </section>
+
+    <!-- List of Events -->
+    <div class="event-list">
+        <h3>Upcoming Events</h3>
+        <ul>
+            {% for event in events %}
+            <li onclick="openEventDetails({{ event.id }})">
+                <strong>{{ event.sport }}</strong> on <strong>{{ event.date }}</strong> at <strong>{{ event.time }}</strong>
+                <br>Venue: {{ event.venue }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Event Details Modal -->
+    <div id="eventDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Event Details</h2>
+            <div id="eventDetails"></div>
+        </div>
+    </div>
+
+    <!-- Add Event Modal -->
+    <div id="eventFormModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Add New Event</h2>
+            <form class="event-form" action="/api/event/" method="post">
+                <label for="sport">Sport:</label>
+                <input type="text" id="sport" name="sport" required>
+                
+                <label for="date">Date (YYYY-MM-DD):</label>
+                <input type="date" id="date" name="date" required>
+                
+                <label for="time">Time (HH:MM):</label>
+                <input type="time" id="time" name="time" required>
+                
+                <label for="home_team">Home Team:</label>
+                <input type="text" id="home_team" name="home_team" required>
+                
+                <label for="away_team">Away Team:</label>
+                <input type="text" id="away_team" name="away_team" required>
+                
+                <label for="venue">Venue:</label>
+                <input type="text" id="venue" name="venue">
+                
+                <button type="submit">Add Event</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openEventDetails(eventId) {
+            const eventDetails = {
+                // Simulating a data fetch
+                {% for event in events %}
+                {{ event.id }}: `<strong>${{ event.sport }}</strong> on <strong>${{ event.date }}</strong> at <strong>${{ event.time }}</strong><br>
+                <strong>${{ event.home_team }}</strong> vs <strong>${{ event.away_team }}</strong><br>
+                Venue: ${ event.venue }`,
+                {% endfor %}
+            };
+
+            document.getElementById('eventDetails').innerHTML = eventDetails[eventId];
+            document.getElementById('eventDetailsModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('eventFormModal').style.display = 'none';
+            document.getElementById('eventDetailsModal').style.display = 'none';
+        }
+
+        // Close the modal when clicking outside of it
+        window.onclick = function(event) {
+            if (event.target === document.getElementById('eventFormModal') || event.target === document.getElementById('eventDetailsModal')) {
+                closeModal();
+            }
+        }
+    </script>
 </body>
 </html>

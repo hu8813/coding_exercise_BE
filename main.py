@@ -45,13 +45,23 @@ def init_db():
 def startup_event():
     init_db()
 
-# Display form for adding a new event
-@app.get("/add-event", response_class=HTMLResponse)
-async def add_event_form(request: Request):
-    return templates.TemplateResponse("add_event.html", {"request": request})
+# Main page displaying all events
+@app.get("/", response_class=HTMLResponse)
+async def read_events(request: Request):
+    try:
+        with sqlite3.connect(DATABASE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM events ORDER BY date ASC, time ASC")
+            rows = cursor.fetchall()
+            events = [{"id": row[0], "sport": row[1], "date": row[2], "time": row[3],
+                       "home_team": row[4], "away_team": row[5], "venue": row[6]} for row in rows]
+        return templates.TemplateResponse("index.html", {"request": request, "events": events})
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to fetch events.")
 
-# Add error-handling and data validation to the event creation route
-@app.post("/event/")
+# API to handle event-related operations
+@app.post("/api/event/")
 async def create_event(
     sport: str = Form(...),
     date: str = Form(...),
@@ -83,22 +93,9 @@ async def create_event(
         print(f"Unexpected error: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
 
-# Display all events
-@app.get("/", response_class=HTMLResponse)
-async def read_events(request: Request):
-    try:
-        with sqlite3.connect(DATABASE) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM events ORDER BY date ASC, time ASC")
-            rows = cursor.fetchall()
-            events = [{"id": row[0], "sport": row[1], "date": row[2], "time": row[3], "home_team": row[4], "away_team": row[5], "venue": row[6]} for row in rows]
-        return templates.TemplateResponse("index.html", {"request": request, "events": events})
-    except sqlite3.Error as e:
-        print(f"Database error: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to fetch events.")
-
-@app.get("/events/")
-async def get_events(request: Request, sport: Optional[str] = None, date: Optional[str] = None):
+# API endpoint to fetch events
+@app.get("/api/events/")
+async def get_events(sport: Optional[str] = None, date: Optional[str] = None):
     query = "SELECT * FROM events"
     params = []
 
@@ -118,16 +115,17 @@ async def get_events(request: Request, sport: Optional[str] = None, date: Option
             cursor = conn.cursor()
             cursor.execute(query, params)
             rows = cursor.fetchall()
-            events = [{"id": row[0], "sport": row[1], "date": row[2], "time": row[3], "home_team": row[4], "away_team": row[5], "venue": row[6]} for row in rows]
+            events = [{"id": row[0], "sport": row[1], "date": row[2], "time": row[3],
+                       "home_team": row[4], "away_team": row[5], "venue": row[6]} for row in rows]
         
-        return templates.TemplateResponse("events.html", {"request": request, "events": events})
+        return events  # Return JSON response for the API
     except sqlite3.Error as e:
         print(f"Database error: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to fetch events.")
 
 # Route to get one event by ID
-@app.get("/event/{event_id}")
-async def get_event(event_id: int, request: Request):
+@app.get("/api/event/{event_id}")
+async def get_event(event_id: int):
     try:
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
@@ -139,7 +137,7 @@ async def get_event(event_id: int, request: Request):
                 "id": row[0], "sport": row[1], "date": row[2], "time": row[3],
                 "home_team": row[4], "away_team": row[5], "venue": row[6]
             }
-        return templates.TemplateResponse("event.html", {"request": request, "event": event})
+        return event  # Return JSON response for the API
     except sqlite3.Error as e:
         print(f"Database error: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to fetch event.")
