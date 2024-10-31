@@ -29,7 +29,7 @@ async def get_db_connection():
 async def add_event_form(request: Request):
     return templates.TemplateResponse("add_event.html", {"request": request})
 
-# Display all events
+# Display all events (home page)
 @app.get("/", response_class=HTMLResponse)
 async def read_events(request: Request):
     conn = await get_db_connection()
@@ -76,7 +76,7 @@ async def create_event(
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
 # Route to get one event by ID
-@app.get("/event/{event_id}", response_class=HTMLResponse)
+@app.get("/api/event/{event_id}", response_class=HTMLResponse)
 async def get_event(event_id: int, request: Request):
     conn = await get_db_connection()
     try:
@@ -88,8 +88,8 @@ async def get_event(event_id: int, request: Request):
         await conn.close()
     return templates.TemplateResponse("event.html", {"request": request, "event": event_data})
 
-# Route to filter events
-@app.get("/events/", response_class=HTMLResponse)
+# Route to get events (with filters, if provided)
+@app.get("/api/events/", response_class=HTMLResponse)
 async def get_events(request: Request, sport: Optional[str] = None, date: Optional[str] = None):
     conn = await get_db_connection()
     query = "SELECT * FROM events"
