@@ -1,7 +1,8 @@
 fastapi
 uvicorn
-requests
-jsonpickle
+sqlalchemy[asyncio]
+psycopg2-binary
+asyncpg
 python-dotenv
 jinja2
 python-multipart

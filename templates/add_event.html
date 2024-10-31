@@ -1,30 +1,39 @@
-<form action="/api/event/" method="post" class="event-form">
-    <label for="sport">Sport:</label>
-    <input type="text" id="sport" name="sport" required>
-
-    <label for="date">Date:</label>
-    <input type="date" id="date" name="date">
-
-    <label for="time">Time:</label>
-    <input type="time" id="time" name="time">
-
-    <label for="home_team">Home Team:</label>
-    <input type="text" id="home_team" name="home_team" required>
-
-    <label for="away_team">Away Team:</label>
-    <input type="text" id="away_team" name="away_team" required>
-
-    <label for="venue">Venue (optional):</label>
-    <input type="text" id="venue" name="venue">
-
-    <label for="event_details">Event Details (optional):</label>
-    <textarea id="event_details" name="event_details"></textarea>
-
-    <label for="player_details">Player Details (optional):</label>
-    <textarea id="player_details" name="player_details"></textarea>
-
-    <label for="team_details">Team Details (optional):</label>
-    <textarea id="team_details" name="team_details"></textarea>
-
-    <button type="submit">Add Event</button>
-</form>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Event</title>
+</head>
+<body>
+    <h1>Add a New Event</h1>
+    <form action="/api/event/" method="post">
+        <label for="sport">Sport:</label>
+        <input type="text" name="sport" required><br>
+        
+        <label for="date">Date:</label>
+        <input type="date" name="date"><br>
+        
+        <label for="time">Time:</label>
+        <input type="time" name="time"><br>
+        
+        <label for="home_team">Home Team:</label>
+        <input type="text" name="home_team" required><br>
+        
+        <label for="away_team">Away Team:</label>
+        <input type="text" name="away_team" required><br>
+        
+        <label for="venue">Venue:</label>
+        <input type="text" name="venue"><br>
+        
+        <label for="event_details">Event Details:</label>
+        <textarea name="event_details"></textarea><br>
+        
+        <label for="player_details">Player Details:</label>
+        <textarea name="player_details"></textarea><br>
+        
+        <label for="team_details">Team Details:</label>
+        <textarea name="team_details"></textarea><br>
+        
+        <input type="submit" value="Add Event">
+    </form>
+</body>
+</html>

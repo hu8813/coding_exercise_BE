@@ -1,21 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Sports Events</title>
+    <title>Events</title>
 </head>
 <body>
-    <h1>Sports Events</h1>
+    <h1>Events</h1>
     <a href="/add-event">Add New Event</a>
-    <div>
+    <ul>
         {% for event in events %}
-        <div>
-            <h2>{{ event.sport }} - {{ event.home_team }} vs {{ event.away_team }}</h2>
-            <p>Date: {{ event.date }}</p>
-            <p>Time: {{ event.time }}</p>
-            <p>Venue: {{ event.venue }}</p>
-        </div>
+            <li>
+                <a href="/event/{{ event.id }}">{{ event.sport }} - {{ event.date }} - {{ event.home_team }} vs {{ event.away_team }}</a>
+            </li>
         {% endfor %}
-    </div>
+    </ul>
 </body>
 </html>
