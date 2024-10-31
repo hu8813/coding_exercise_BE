@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sports Events</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <h1>Sports Events</h1>
+    <a href="/event/new">Add New Event</a>
+    <div class="event-list">
+        {% for event in events %}
+        <div class="event">
+            <h2>{{ event.originCompetitionName }} - {{ event.stage.name }}</h2>
+            <p><strong>Date:</strong> {{ event.dateVenue }} | <strong>Time:</strong> {{ event.timeVenueUTC }}</p>
+            <p><strong>Season:</strong> {{ event.season }} | <strong>Status:</strong> {{ event.status }}</p>
+            <p><strong>Home Team:</strong> {{ event.homeTeam.officialName }} ({{ event.homeTeam.abbreviation }})</p>
+            <p><strong>Away Team:</strong> {{ event.awayTeam.officialName }} ({{ event.awayTeam.abbreviation }})</p>
+            <p><strong>Result:</strong> 
+                {% if event.result.winner %}
+                {{ event.result.homeGoals }} - {{ event.result.awayGoals }} (Winner: {{ event.result.winner }})
+                {% else %}
+                Scheduled
+                {% endif %}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

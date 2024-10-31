@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sports Events</title>
+</head>
+<body>
+    <h1>Sports Events</h1>
+    <a href="/add-event">Add New Event</a>
+    <div>
+        {% for event in events %}
+        <div>
+            <h2>{{ event.sport }} - {{ event.home_team }} vs {{ event.away_team }}</h2>
+            <p>Date: {{ event.date }}</p>
+            <p>Time: {{ event.time }}</p>
+            <p>Venue: {{ event.venue }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
