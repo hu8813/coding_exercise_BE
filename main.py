@@ -15,7 +15,7 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Use a temporary directory for the SQLite database
-DATABASE = os.path.join("/tmp", "events.db")  # Vercel allows write access to /tmp
+DATABASE = os.path.join("/tmp", "events.sqlite")  # Vercel allows write access to /tmp
 
 def init_db():
     if not os.path.exists(DATABASE):
