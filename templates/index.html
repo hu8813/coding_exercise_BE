@@ -86,8 +86,7 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgba(0, 0, 0, 0.4);
             padding-top: 60px;
         }
 
@@ -126,7 +125,7 @@
             font-size: 0.9rem;
         }
 
-        .event-form input {
+        .event-form input, .event-form select {
             padding: 10px;
             font-size: 0.9rem;
             border: 1px solid #ddd;
@@ -168,6 +167,30 @@
             padding: 10px;
             margin-bottom: 10px;
         }
+
+        .autocomplete-list {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            position: absolute;
+            z-index: 999;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .autocomplete-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Custom Team Input */
+        .custom-team-input {
+            display: none; /* Hidden by default */
+        }
     </style>
 </head>
 <body>
@@ -181,11 +204,11 @@
     
     <section class="calendar">
         {% for event in events %}
-        <div class="event-card" onclick="openEventDetails({{ event.id }})">
-            <h2>{{ event.sport }}</h2>
-            <p><strong>{{ event.date }}</strong> at <strong>{{ event.time }}</strong></p>
+        <div class="event-card" onclick="openEventDetails({{ event.event_id }})">
+            <h2>{{ event.sport_type }}</h2>
+            <p><strong>{{ event.event_date }}</strong> at <strong>{{ event.event_time }}</strong></p>
             <p>{{ event.home_team }} vs {{ event.away_team }}</p>
-            <p>Venue: {{ event.venue }}</p>
+            <p>Venue: {{ event.venue_name }}</p>
         </div>
         {% endfor %}
     </section>
@@ -195,9 +218,9 @@
         <h3>Upcoming Events</h3>
         <ul>
             {% for event in events %}
-            <li onclick="openEventDetails({{ event.id }})">
-                <strong>{{ event.sport }}</strong> on <strong>{{ event.date }}</strong> at <strong>{{ event.time }}</strong>
-                <br>Venue: {{ event.venue }}
+            <li onclick="openEventDetails({{ event.event_id }})">
+                <strong>{{ event.sport_type }}</strong> on <strong>{{ event.event_date }}</strong> at <strong>{{ event.event_time }}</strong>
+                <br>Venue: {{ event.venue_name }}
             </li>
             {% endfor %}
         </ul>
@@ -217,53 +240,127 @@
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
             <h2>Add New Event</h2>
-            <form class="event-form" action="/api/event/" method="post">
-                <label for="sport">Sport:</label>
-                <input type="text" id="sport" name="sport" required>
-                
-                <label for="date">Date (YYYY-MM-DD):</label>
-                <input type="date" id="date" name="date" required>
-                
-                <label for="time">Time (HH:MM):</label>
-                <input type="time" id="time" name="time" required>
-                
-                <label for="home_team">Home Team:</label>
-                <input type="text" id="home_team" name="home_team" required>
-                
-                <label for="away_team">Away Team:</label>
-                <input type="text" id="away_team" name="away_team" required>
-                
-                <label for="venue">Venue:</label>
-                <input type="text" id="venue" name="venue">
-                
+            <form class="event-form" id="addEventForm" action="/api/event/" method="post" onsubmit="return handleSubmit(event)">
+                <label for="sport_type">Sport Type:</label>
+                <input type="text" id="sport_type" name="sport_type" required>
+
+                <label for="event_date">Date:</label>
+                <input type="date" id="event_date" name="event_date" required>
+
+                <label for="event_time">Time:</label>
+                <input type="time" id="event_time" name="event_time" required>
+
+                <label for="home_team_id">Home Team:</label>
+                <select id="home_team_id" name="home_team_id" onchange="toggleCustomTeamInput(this, 'home')" required>
+                    <option value="">Select Home Team</option>
+                    {% for team in teams %}
+                    <option value="{{ team.team_id }}">{{ team.name }}</option>
+                    {% endfor %}
+                    <option value="custom">Custom Team</option>
+                </select>
+                <input type="text" id="home_team_custom" class="custom-team-input" name="home_team_custom" placeholder="Enter new home team name" autocomplete="off">
+
+                <label for="away_team_id">Away Team:</label>
+                <select id="away_team_id" name="away_team_id" onchange="toggleCustomTeamInput(this, 'away')" required>
+                    <option value="">Select Away Team</option>
+                    {% for team in teams %}
+                    <option value="{{ team.team_id }}">{{ team.name }}</option>
+                    {% endfor %}
+                    <option value="custom">Custom Team</option>
+                </select>
+                <input type="text" id="away_team_custom" class="custom-team-input" name="away_team_custom" placeholder="Enter new away team name" autocomplete="off">
+
+                <label for="venue_id">Select Venue:</label>
+                <select id="venue_id" name="venue_id" onchange="toggleCustomVenueInput()">
+                    <option value="">Select an existing venue</option>
+                    <!-- Dynamically populate venues from the database -->
+                    {% for venue in venues %}
+                    <option value="{{ venue.venue_id }}">{{ venue.name }}</option>
+                    {% endfor %}
+                    <option value="custom">Custom Venue</option> <!-- Add option for custom venues -->
+                </select>
+
+                <label for="custom_venue" id="custom_venue_label" style="display:none;">Custom Venue:</label>
+                <input type="text" id="custom_venue" name="custom_venue" style="display:none;" placeholder="Enter custom venue name">
+
                 <button type="submit">Add Event</button>
             </form>
         </div>
     </div>
 
     <script>
-        function openEventDetails(eventId) {
-            const eventDetails = {
-                // Simulating a data fetch
-                {% for event in events %}
-                {{ event.id }}: `<strong>${{ event.sport }}</strong> on <strong>${{ event.date }}</strong> at <strong>${{ event.time }}</strong><br>
-                <strong>${{ event.home_team }}</strong> vs <strong>${{ event.away_team }}</strong><br>
-                Venue: ${ event.venue }`,
-                {% endfor %}
-            };
+        function toggleCustomTeamInput(selectElement, teamType) {
+            const customInput = document.getElementById(`${teamType}_team_custom`);
+            if (selectElement.value === 'custom') {
+                customInput.style.display = 'block';
+            } else {
+                customInput.style.display = 'none';
+            }
+        }
 
-            document.getElementById('eventDetails').innerHTML = eventDetails[eventId];
-            document.getElementById('eventDetailsModal').style.display = 'block';
+        function toggleCustomVenueInput() {
+            const venueSelect = document.getElementById('venue_id');
+            const customVenueInput = document.getElementById('custom_venue');
+            const customVenueLabel = document.getElementById('custom_venue_label');
+
+            if (venueSelect.value === "custom") {
+                customVenueInput.style.display = 'block';
+                customVenueLabel.style.display = 'block';
+            } else {
+                customVenueInput.style.display = 'none';
+                customVenueLabel.style.display = 'none';
+            }
+        }
+
+        function handleSubmit(event) {
+            const homeTeamSelect = document.getElementById('home_team_id');
+            const awayTeamSelect = document.getElementById('away_team_id');
+            const venueSelect = document.getElementById('venue_id');
+
+            // Handle custom home team
+            if (homeTeamSelect.value === 'custom') {
+                event.target.home_team_id.value = document.getElementById('home_team_custom').value;
+            }
+
+            // Handle custom away team
+            if (awayTeamSelect.value === 'custom') {
+                event.target.away_team_id.value = document.getElementById('away_team_custom').value;
+            }
+
+            // Handle custom venue
+            if (venueSelect.value === 'custom' || venueSelect.value === '') {
+                event.target.venue_id.value = document.getElementById('custom_venue').value;
+            }
+
+            return true; // Allow form submission
+        }
+
+        function openEventDetails(eventId) {
+            // Fetch event details via API
+            fetch(`/api/event/${eventId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('eventDetails').innerHTML = `
+                        <p><strong>Sport Type:</strong> ${data.sport_type}</p>
+                        <p><strong>Date:</strong> ${data.event_date}</p>
+                        <p><strong>Time:</strong> ${data.event_time}</p>
+                        <p><strong>Home Team:</strong> ${data.home_team}</p>
+                        <p><strong>Away Team:</strong> ${data.away_team}</p>
+                        <p><strong>Venue:</strong> ${data.venue_name}</p>
+                    `;
+                    document.getElementById('eventDetailsModal').style.display = 'block';
+                });
         }
 
         function closeModal() {
-            document.getElementById('eventFormModal').style.display = 'none';
-            document.getElementById('eventDetailsModal').style.display = 'none';
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
         }
 
-        // Close the modal when clicking outside of it
+        // Close modals when clicking outside
         window.onclick = function(event) {
-            if (event.target === document.getElementById('eventFormModal') || event.target === document.getElementById('eventDetailsModal')) {
+            if (event.target.className === 'modal') {
                 closeModal();
             }
         }

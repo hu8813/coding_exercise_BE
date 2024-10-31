@@ -1,39 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Event</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        .event-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+            margin: auto;
+        }
+        .event-form label {
+            font-size: 0.9rem;
+        }
+        .event-form input, .event-form select {
+            padding: 10px;
+            font-size: 0.9rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .event-form button {
+            align-self: flex-start;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .event-form button:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
 <body>
-    <h1>Add a New Event</h1>
-    <form action="/api/event/" method="post">
-        <label for="sport">Sport:</label>
-        <input type="text" name="sport" required><br>
-        
-        <label for="date">Date:</label>
-        <input type="date" name="date"><br>
-        
-        <label for="time">Time:</label>
-        <input type="time" name="time"><br>
-        
-        <label for="home_team">Home Team:</label>
-        <input type="text" name="home_team" required><br>
-        
-        <label for="away_team">Away Team:</label>
-        <input type="text" name="away_team" required><br>
-        
-        <label for="venue">Venue:</label>
-        <input type="text" name="venue"><br>
-        
-        <label for="event_details">Event Details:</label>
-        <textarea name="event_details"></textarea><br>
-        
-        <label for="player_details">Player Details:</label>
-        <textarea name="player_details"></textarea><br>
-        
-        <label for="team_details">Team Details:</label>
-        <textarea name="team_details"></textarea><br>
-        
-        <input type="submit" value="Add Event">
+    <h2>Add New Event</h2>
+    <form class="event-form" action="/api/event/" method="post">
+        <label for="sport_type">Sport Type:</label>
+        <input type="text" id="sport_type" name="sport_type" required>
+
+        <label for="event_date">Date:</label>
+        <input type="date" id="event_date" name="event_date" required>
+
+        <label for="event_time">Time:</label>
+        <input type="time" id="event_time" name="event_time" required>
+
+        <label for="home_team_id">Home Team:</label>
+        <select id="home_team_id" name="home_team_id" required>
+            <option value="">Select Home Team</option>
+            {% for team in teams %}
+            <option value="{{ team.team_id }}">{{ team.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="away_team_id">Away Team:</label>
+        <select id="away_team_id" name="away_team_id" required>
+            <option value="">Select Away Team</option>
+            {% for team in teams %}
+            <option value="{{ team.team_id }}">{{ team.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="venue_id">Venue:</label>
+        <select id="venue_id" name="venue_id" required>
+            <option value="">Select Venue</option>
+            {% for venue in venues %}
+            <option value="{{ venue.venue_id }}">{{ venue.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="description">Description:</label>
+        <textarea id="description" name="description"></textarea>
+
+        <button type="submit">Add Event</button>
     </form>
 </body>
 </html>
