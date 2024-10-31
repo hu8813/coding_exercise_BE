@@ -2,17 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Event</title>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h1>Add a New Event</h1>
-    <form action="/event/" method="post">
-        <label>Sport: <input type="text" name="sport" required></label><br>
-        <label>Date: <input type="date" name="date" required></label><br>
-        <label>Time: <input type="time" name="time" required></label><br>
-        <label>Home Team: <input type="text" name="home_team" required></label><br>
-        <label>Away Team: <input type="text" name="away_team" required></label><br>
-        <label>Venue: <input type="text" name="venue" required></label><br>
+    <header>
+        <h1>Add a New Event</h1>
+    </header>
+
+    <form action="/event/" method="post" class="event-form">
+        <label for="sport">Sport</label>
+        <input type="text" id="sport" name="sport" placeholder="e.g., Football" required>
+
+        <label for="date">Date</label>
+        <input type="date" id="date" name="date" required>
+
+        <label for="time">Time</label>
+        <input type="time" id="time" name="time" required>
+
+        <label for="home_team">Home Team</label>
+        <input type="text" id="home_team" name="home_team" placeholder="e.g., Team A" required>
+
+        <label for="away_team">Away Team</label>
+        <input type="text" id="away_team" name="away_team" placeholder="e.g., Team B" required>
+
         <button type="submit">Add Event</button>
     </form>
 </body>

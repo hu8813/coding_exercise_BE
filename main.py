@@ -1,16 +1,21 @@
-from fastapi import FastAPI, HTTPException, Request, Form
+from fastapi import FastAPI, HTTPException, Request, Form, status
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
-from typing import Optional, List
-from datetime import datetime
+from fastapi.staticfiles import StaticFiles  # Import StaticFiles
 import sqlite3
+from datetime import datetime
+from contextlib import asynccontextmanager
+from typing import Optional
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# Database setup
+# Serve static files from the "static" directory
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 DATABASE = "events.db"
 
+# Initialize the database connection
 def init_db():
     with sqlite3.connect(DATABASE) as conn:
         cursor = conn.cursor()
@@ -22,47 +27,66 @@ def init_db():
                 time TEXT NOT NULL,
                 home_team TEXT NOT NULL,
                 away_team TEXT NOT NULL,
-                venue TEXT NOT NULL
+                venue TEXT
             )
         ''')
         conn.commit()
 
-@app.on_event("startup")
-def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     init_db()
+    yield
 
-# Pydantic model for the event data
-class Event(BaseModel):
-    sport: str
-    date: str
-    time: str
-    home_team: str
-    away_team: str
-    venue: str
+app = FastAPI(lifespan=lifespan)
 
-# Route to add a new event
+# Display form for adding a new event
+@app.get("/add-event", response_class=HTMLResponse)
+async def add_event_form(request: Request):
+    return templates.TemplateResponse("add_event.html", {"request": request})
+
+# Add error-handling and data validation to the event creation route
 @app.post("/event/")
-async def add_event(
+async def create_event(
     sport: str = Form(...),
     date: str = Form(...),
     time: str = Form(...),
     home_team: str = Form(...),
     away_team: str = Form(...),
-    venue: str = Form(...)
+    venue: str = Form(None)
 ):
     try:
+        # Validate date format (YYYY-MM-DD)
+        datetime.strptime(date, "%Y-%m-%d")
+        # Validate time format (HH:MM)
+        datetime.strptime(time, "%H:%M")
+
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
-            cursor.execute('''
+            cursor.execute("""
                 INSERT INTO events (sport, date, time, home_team, away_team, venue)
                 VALUES (?, ?, ?, ?, ?, ?)
-            ''', (sport, date, time, home_team, away_team, venue))
+            """, (sport, date, time, home_team, away_team, venue))
             conn.commit()
-        return {"message": "Event added successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
-# Route to get all events with optional filters
+        return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to add event to the database.")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
+
+# Display all events
+@app.get("/", response_class=HTMLResponse)
+async def read_events(request: Request):
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM events ORDER BY date ASC, time ASC")
+        rows = cursor.fetchall()
+        events = [{"id": row[0], "sport": row[1], "date": row[2], "time": row[3], "home_team": row[4], "away_team": row[5], "venue": row[6]} for row in rows]
+    return templates.TemplateResponse("index.html", {"request": request, "events": events})
+
 @app.get("/events/")
 async def get_events(request: Request, sport: Optional[str] = None, date: Optional[str] = None):
     query = "SELECT * FROM events"
