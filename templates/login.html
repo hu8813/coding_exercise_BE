@@ -65,10 +65,12 @@
 <body>
     <div id="loginContainer" class="login-container">
         <h2>Login</h2>
-        <form id="loginForm" action="/login" method="post">
-            <input type="password" id="password" name="password" placeholder="Enter password" required>
-            <button type="submit">Login</button>
+        <form action="/login" method="post">
+            <input type="password" id="password" name="password" placeholder="Enter password" required value="demo123">
+            <button type="submit">Login</button><br>
+            demo123 is the demo password.
         </form>
+        
         <div id="error-message" class="error-message">
             <!-- Display server-side error messages here -->
             {% if error %}

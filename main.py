@@ -178,22 +178,20 @@ async def add_event_form(request: Request, conn=Depends(get_db_connection_depend
     venues = await get_venues(conn)
     return templates.TemplateResponse("add_event.html", {"request": request, "teams": teams, "venues": venues, "message": message})
 
-
 @app.get("/", response_class=HTMLResponse)
 async def read_events(request: Request, session_id: str = Cookie(None), conn=Depends(get_db_connection_dependency)):
+    print(f"Accessing root: session_id={session_id}")  # Debugging
     if session_id != "authenticated":
-        return RedirectResponse(url="/login")  # Redirect to login if not authenticated
-
+        print("Redirecting to login due to unauthenticated session.")  # Debugging
+        return RedirectResponse(url="/login")
+    
     events = await get_events(conn)  # Fetch events from the database
-    teams = await get_teams(conn)  # Fetch teams from the database
-    venues = await get_venues(conn)  # Fetch venues from the database
-
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "events": events,
-        "teams": teams,  # Include teams data
-        "venues": venues  # Include venues data
+        "events": events
     })
+
+
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_get(request: Request):
@@ -203,11 +201,19 @@ async def login_get(request: Request):
 async def login_post(request: Request, password: str = Form(...)):
     print(f"Received password: {password}")  # Debugging
     if password == PASSWORD:
-        response = RedirectResponse(url="/")
+        # If login is successful
+        response = RedirectResponse(url="/", status_code=303)  # 303 See Other for redirects after a POST
         response.set_cookie(key="session_id", value="authenticated")
+        print("Login successful, setting cookie and redirecting.")  # Debugging
         return response
     else:
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid password"})
+        # If login fails
+        print("Invalid password, returning to login.")  # Debugging
+        return templates.TemplateResponse("login.html", {
+            "request": request,
+            "error": "Invalid password"
+        })
+
     
 if __name__ == "__main__":
     import uvicorn
