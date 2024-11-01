@@ -177,7 +177,7 @@
 
                 // Populate teams dropdown
                 const teamsDropdown = document.getElementById('teams-dropdown');
-                teamsDropdown.innerHTML = '<option value="">Select a Team</option>'; // Clear previous items
+                teamsDropdown.innerHTML = '<option value="">Teams</option>'; // Clear previous items
                 teams.forEach(team => {
                     const option = document.createElement('option');
                     option.value = team.id; // Assuming each team has a unique ID
@@ -187,7 +187,7 @@
 
                 // Populate venues dropdown
                 const venuesDropdown = document.getElementById('venues-dropdown');
-                venuesDropdown.innerHTML = '<option value="">Select a Venue</option>'; // Clear previous items
+                venuesDropdown.innerHTML = '<option value="">Venues</option>'; // Clear previous items
                 venues.forEach(venue => {
                     const option = document.createElement('option');
                     option.value = venue.id; // Assuming each venue has a unique ID
@@ -252,9 +252,9 @@
         
             events.forEach(event => {
                 // Use the teams and venues global arrays to find names based on IDs
-                const homeTeam = teams.find(team => team.id === event.home_team_id);
-                const awayTeam = teams.find(team => team.id === event.away_team_id);
-                const venue = venues.find(venue => venue.id === event.venue_id);
+                const homeTeam = teams.find(team => team.team_id === event.home_team_id); // Change here
+                const awayTeam = teams.find(team => team.team_id === event.away_team_id); // Change here
+                const venue = venues.find(venue => venue.venue_id === event.venue_id); // Correctly access venue
         
                 const eventDetail = document.createElement('div');
                 eventDetail.innerHTML = `
@@ -272,6 +272,7 @@
             // Show the modal
             document.getElementById('eventModal').style.display = 'block';
         }
+        
         
 
         function closeModal() {
