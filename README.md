@@ -80,7 +80,4 @@ python3 main.py
 ### Access the Application
 Open your web browser and go to http://127.0.0.1:8000 to see the application running.
 
-### Entity-Relationship Diagram (ERD)
-![ERD](erd.png)
-
 

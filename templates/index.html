@@ -5,17 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sports Events Calendar</title>
     <style>
-        /* General Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* General Styles */
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background-color: #007BFF;
+            color: white;
             padding: 20px;
-            background-color: #f4f4f9;
+            height: 100vh;
+            position: fixed;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #0056b3;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 270px;
+            padding: 20px;
+            flex: 1;
         }
 
         header {
@@ -25,74 +55,84 @@
             margin-bottom: 20px;
         }
 
-        header h1 {
-            font-size: 1.5rem;
+        /* Month-Year Navigation Styles */
+        .month-navigation {
+            display: flex;
+            align-items: center;
         }
 
-        button, .api-docs-link {
+        .month-navigation h2 {
+            font-size: 1.2rem;
+            margin: 0 10px;
+        }
+
+        .month-navigation button {
             background-color: #007BFF;
             color: white;
+            padding: 5px 10px;
             border: none;
-            padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
+            transition: background-color 0.3s;
         }
 
-        button:hover, .api-docs-link:hover {
+        .month-navigation button:hover {
             background-color: #0056b3;
         }
 
-        /* Calendar Style */
+        /* Calendar Styles */
         .calendar {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
             margin-bottom: 30px;
         }
 
-        .event-card {
-            background-color: white;
+        .calendar-day {
             border: 1px solid #ddd;
             border-radius: 5px;
-            padding: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
+            padding: 10px;
+            position: relative;
+            text-align: center;
             cursor: pointer;
+            background-color: #fff;
         }
 
-        .event-card:hover {
-            transform: scale(1.05);
+        .event-dot {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            background-color: #007BFF;
+            border-radius: 50%;
         }
 
-        .event-card h2 {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
+        /* Upcoming Events Styles */
+        .welcome-message {
+            background-color: #e2e3e5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
         }
 
-        .event-card p {
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        /* Event Details Modal */
+        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
-            z-index: 1;
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
             overflow: auto;
             background-color: rgba(0, 0, 0, 0.4);
-            padding-top: 60px;
         }
 
         .modal-content {
             background-color: #fefefe;
-            margin: 5% auto;
+            margin: 15% auto;
             padding: 20px;
             border: 1px solid #888;
             width: 80%;
@@ -111,229 +151,172 @@
             text-decoration: none;
             cursor: pointer;
         }
-
-        /* Form Style */
-        .event-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-width: 400px;
-            margin: auto;
-        }
-
-        .event-form label {
-            font-size: 0.9rem;
-        }
-
-        .event-form input, .event-form select {
-            padding: 10px;
-            font-size: 0.9rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        .event-form button {
-            align-self: flex-start;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .event-form button:hover {
-            background-color: #218838;
-        }
-
-        /* List of Events */
-        .event-list {
-            margin-top: 30px;
-        }
-
-        .event-list h3 {
-            margin-bottom: 10px;
-        }
-
-        .event-list ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .event-list li {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-
-        .custom-team-input {
-            display: none; /* Hidden by default */
-        }
     </style>
     <script>
-        function toggleCustomTeamInput(selectElement, teamType) {
-            const customInput = document.getElementById(`${teamType}_team_custom`);
-            if (selectElement.value === 'custom') {
-                customInput.style.display = 'block';
-                customInput.value = '';
-            } else {
-                customInput.style.display = 'none';
-            }
+        let currentYear;
+        let currentMonth;
+        let teams = {};
+        let venues = {};
+
+        async function loadCalendar() {
+            const today = new Date();
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth();
+
+            await loadTeamsAndVenues();
+            await loadEventsAndGenerateCalendar();
         }
 
-        function toggleCustomVenueInput() {
-            const venueSelect = document.getElementById('venue_id');
-            const customVenueInput = document.getElementById('venue_custom');
-            if (venueSelect.value === 'custom') {
-                customVenueInput.style.display = 'block';
-                customVenueInput.value = '';
-            } else {
-                customVenueInput.style.display = 'none';
-            }
-        }
-
-        async function handleSubmit(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-
-            // Handle custom team names
-            const homeTeamCustom = document.getElementById('home_team_custom');
-            const awayTeamCustom = document.getElementById('away_team_custom');
-            const venueCustom = document.getElementById('venue_custom');
-
-            if (homeTeamCustom.value) {
-                formData.set('home_team_id', homeTeamCustom.value);
-            }
-
-            if (awayTeamCustom.value) {
-                formData.set('away_team_id', awayTeamCustom.value);
-            }
-
-            if (venueCustom.value) {
-                formData.set('venue_id', venueCustom.value);
-            }
-
-            try {
-                const response = await fetch('/api/event/', {
-                    method: 'POST',
-                    body: formData,
+        async function loadTeamsAndVenues() {
+            // Load teams
+            const teamsResponse = await fetch('/api/teams');
+            if (teamsResponse.ok) {
+                const teamsData = await teamsResponse.json();
+                teamsData.forEach(team => {
+                    teams[team.id] = team.name; // Map team id to name
                 });
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const result = await response.json();
-                console.log('Event created:', result);
-                closeModal();
-                // Optionally refresh the events or update the calendar display
-            } catch (error) {
-                console.error('Error creating event:', error);
+            } else {
+                console.error("Failed to load teams");
             }
+
+            // Load venues
+            const venuesResponse = await fetch('/api/venues');
+            if (venuesResponse.ok) {
+                const venuesData = await venuesResponse.json();
+                venuesData.forEach(venue => {
+                    venues[venue.id] = venue.name; // Map venue id to name
+                });
+            } else {
+                console.error("Failed to load venues");
+            }
+        }
+
+        async function loadEventsAndGenerateCalendar() {
+            const response = await fetch('/api/events');
+            if (response.ok) {
+                const events = await response.json();
+                generateCalendar(currentYear, currentMonth, events);
+            } else {
+                alert("Failed to load events");
+            }
+        }
+
+        function generateCalendar(year, month, events) {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+            const currentMonthYear = document.getElementById('currentMonthYear');
+            currentMonthYear.innerText = `${year} - ${month + 1}`;
+        
+            const date = new Date(year, month, 1);
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const startDay = date.getDay();
+        
+            for (let i = 0; i < startDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day';
+                calendar.appendChild(emptyDay);
+            }
+        
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day';
+                dayDiv.innerHTML = day;
+        
+                const eventDateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                const dayEvents = events.filter(event => event.event_date === eventDateString);
+        
+                if (dayEvents.length > 0) {
+                    const dot = document.createElement('div');
+                    dot.className = 'event-dot';
+                    dayDiv.appendChild(dot);
+        
+                    // Add click event to show details in modal
+                    dayDiv.onclick = () => showEventDetails(dayEvents);
+                }
+        
+                calendar.appendChild(dayDiv);
+            }
+        }
+
+        function showEventDetails(events) {
+            const eventDetails = document.getElementById('eventDetails');
+            eventDetails.innerHTML = ''; // Clear previous details
+
+            events.forEach(event => {
+                const eventDetail = document.createElement('div');
+                eventDetail.innerHTML = `
+                    <h3>${event.sport_type} - ${event.event_date}</h3>
+                    <p>Time: ${event.event_time}</p>
+                    <p>Home Team: ${teams[event.home_team_id] || 'N/A'}</p>
+                    <p>Away Team: ${teams[event.away_team_id] || 'N/A'}</p>
+                    <p>Venue: ${venues[event.venue_id] || 'N/A'}</p>
+                    <p>Description: ${event.description || 'No description available'}</p>
+                    <hr>
+                `;
+                eventDetails.appendChild(eventDetail);
+            });
+
+            // Show the modal
+            document.getElementById('eventModal').style.display = 'block';
         }
 
         function closeModal() {
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.style.display = 'none';
-            });
+            document.getElementById('eventModal').style.display = 'none';
         }
 
-        function openEventDetails(eventId) {
-            // Implement this function to fetch and display event details
+        document.addEventListener("DOMContentLoaded", loadCalendar);
+
+        function prevMonth() {
+            if (currentMonth === 0) {
+                currentYear--;
+                currentMonth = 11;
+            } else {
+                currentMonth--;
+            }
+            loadEventsAndGenerateCalendar();
+        }
+
+        function nextMonth() {
+            if (currentMonth === 11) {
+                currentYear++;
+                currentMonth = 0;
+            } else {
+                currentMonth++;
+            }
+            loadEventsAndGenerateCalendar();
         }
     </script>
 </head>
 <body>
-    <header>
-        <h1>Sports Events Calendar</h1>
-        <div>
-            <button onclick="document.getElementById('eventFormModal').style.display='block'">Add New Event</button>
-            <a href="/docs" target="_blank" class="api-docs-link">API Documentation</a>
-        </div>
-    </header>
-    
-    <section class="calendar">
-        {% for event in events %}
-        <div class="event-card" onclick="openEventDetails({{ event.event_id }})">
-            <h2>{{ event.sport_type }}</h2>
-            <p><strong>{{ event.event_date }}</strong> at <strong>{{ event.event_time }}</strong></p>
-            <p>{{ event.home_team }} vs {{ event.away_team }}</p>
-            <p>Venue: {{ event.venue_name }}</p>
-        </div>
-        {% endfor %}
-    </section>
-
-    <!-- List of Events -->
-    <div class="event-list">
-        <h3>Upcoming Events</h3>
-        <ul>
-            {% for event in events %}
-            <li onclick="openEventDetails({{ event.event_id }})">
-                <strong>{{ event.sport_type }}</strong> on <strong>{{ event.event_date }}</strong> at <strong>{{ event.event_time }}</strong>
-                <br>Venue: {{ event.venue_name }}
-            </li>
-            {% endfor %}
-        </ul>
+    <div class="sidebar">
+        <h2>Backend</h2>
+        <a href="/">Home</a>
+        <a href="/events">Events</a>
+        <a href="/add-event">Add Event</a>
+        <a href="/docs">API Docs</a>
     </div>
-
-    <!-- Add Event Modal -->
-    <div id="eventFormModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>Add New Event</h2>
-            <form class="event-form" id="addEventForm" action="/api/event/" method="post">
-                <label for="sport_type">Sport Type:</label>
-                <input type="text" id="sport_type" name="sport_type" required>
-
-                <label for="event_date">Date:</label>
-                <input type="date" id="event_date" name="event_date" required>
-
-                <label for="event_time">Time:</label>
-                <input type="time" id="event_time" name="event_time" required>
-
-                <label for="home_team_id">Home Team:</label>
-                <select id="home_team_id" name="home_team_id" onchange="toggleCustomTeamInput(this, 'home')" required>
-                    <option value="">Select Home Team</option>
-                    {% for team in teams %}
-                    <option value="{{ team.team_id }}">{{ team.name }}</option>
-                    {% endfor %}
-                    <option value="custom">Custom Team</option>
-                </select>
-                <input type="text" id="home_team_custom" class="custom-team-input" name="home_team_custom" placeholder="Enter new home team name" autocomplete="off">
-
-                <label for="away_team_id">Away Team:</label>
-                <select id="away_team_id" name="away_team_id" onchange="toggleCustomTeamInput(this, 'away')" required>
-                    <option value="">Select Away Team</option>
-                    {% for team in teams %}
-                    <option value="{{ team.team_id }}">{{ team.name }}</option>
-                    {% endfor %}
-                    <option value="custom">Custom Team</option>
-                </select>
-                <input type="text" id="away_team_custom" class="custom-team-input" name="away_team_custom" placeholder="Enter new away team name" autocomplete="off">
-
-                <label for="venue_id">Select Venue:</label>
-                <select id="venue_id" name="venue_id" onchange="toggleCustomVenueInput()" required>
-                    <option value="">Select an existing venue</option>
-                    {% for venue in venues %}
-                    <option value="{{ venue.venue_id }}">{{ venue.name }}</option>
-                    {% endfor %}
-                    <option value="custom">Custom Venue</option>
-                </select>
-                <input type="text" id="venue_custom" class="custom-team-input" name="venue_custom" placeholder="Enter new venue name" autocomplete="off">
-
-                <button type="submit">Add Event</button>
-            </form>
+    <div class="main-content">
+        
+        <div class="welcome-message">
+            <h2>Welcome to the Sports Events Calendar!</h2>
+            <p>Check out the upcoming events and manage your schedule effectively.</p>
         </div>
-    </div>
-
-    <!-- Event Details Modal -->
-    <div id="eventDetailsModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>Event Details</h2>
-            <div id="eventDetails"></div>
+        
+        <header>
+            <div class="month-navigation">
+                <button onclick="prevMonth()">◀️ Previous</button>
+                <h2 id="currentMonthYear"></h2>
+                <button onclick="nextMonth()">Next ▶️</button>
+            </div>
+        </header>
+        
+        <div id="calendar" class="calendar"></div>
+        
+        <div id="eventModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <div id="eventDetails"></div>
+            </div>
         </div>
     </div>
 </body>
