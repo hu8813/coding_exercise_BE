@@ -102,80 +102,69 @@
     </style>
 </head>
 <body>
-
     <div class="sidebar">
         <h2>Backend</h2>
-        <a href="/" >
-            🏠 <span>Home</span>
-        </a>
-        <a href="/events" >
-            📅 <span>Events</span>
-        </a>
-        <a href="/add-event" >
-            ➕ <span>Add Event</span>
-        </a>
-        <a href="/docs" target="_blank" >
-            📚 <span>API Docs</span>
-        </a>
+        <a href="/" >🏠 <span>Home</span></a>
+        <a href="/events" >📅 <span>Events</span></a>
+        <a href="/add-event" >➕ <span>Add Event</span></a>
+        <a href="/docs" target="_blank" >📚 <span>API Docs</span></a>
     </div>
 
-<!-- Main Content -->
-<div class="main-content">
-    <header>
-        <h1>Events List</h1>
-    </header>
+    <!-- Main Content -->
+    <div class="main-content">
+        <header><h1>Events List</h1></header>
 
-    <!-- Upcoming Events Section -->
-<div class="section-title">Upcoming Events 🎉</div>
-<div class="event-list">
-    {% for event in events %}
-        {% if event.is_upcoming %}
-            <div class="event-card">
-                <h5>{{ event.sport_type }}</h5>
-                <p class="date-time">
-                     {{ event.event_date.strftime('%d %b. %y') }} 
-                     {{ event.event_time.strftime('%I:%M %p') }}
-                </p>
-                <p>
-                    <strong class="team-name">{{ event.home_team_name }}</strong> vs 
-                    <strong class="team-name">{{ event.away_team_name }}</strong>
-                </p>
-                <p>{{ event.venue_name }}</p>
-                {% if event.description %}
-                    <p>{{ event.description }}</p>
+        <!-- Upcoming Events Section -->
+        <div class="section-title">Upcoming Events 🎉</div>
+        <div class="event-list">
+            {% for event in events %}
+                {% if event.is_upcoming %}
+                    <div class="event-card">
+                        <h5>{{ event.sport_name }}</h5>  <!-- Use sport_name instead of sport_type -->
+                        <p class="date-time">
+                             {{ event.event_date.strftime('%d %b. %y') }} 
+                             {{ event.event_time.strftime('%I:%M %p') }}
+                        </p>
+                        <p>
+                            <strong class="team-name">{{ event.home_team_name }}</strong> vs 
+                            <strong class="team-name">{{ event.away_team_name }}</strong>
+                        </p>
+                        <p>{{ event.venue_name }}</p>
+                        {% if event.description %}
+                            <p>{{ event.description }}</p>
+                        {% endif %}
+                    </div>
                 {% endif %}
-            </div>
-        {% endif %}
-    {% endfor %}
-</div>
+            {% endfor %}
+        </div>
 
-<!-- Previous Events Section -->
-<div class="section-title">Previous Events</div>
-<div class="event-list">
-    {% for event in events %}
-        {% if not event.is_upcoming %}
-            <div class="event-card">
-                <h5>{{ event.sport_type }}</h5>
-                <p class="date-time">
-                     {{ event.event_date.strftime('%d %b. %y') }} 
-                      {{ event.event_time.strftime('%I:%M %p') }}
-                </p>
-                <p>
-                    <strong class="team-name">{{ event.home_team_name }}</strong> vs 
-                    <strong class="team-name">{{ event.away_team_name }}</strong>
-                </p>
-                <p>{{ event.venue_name }}</p>
-                {% if event.description %}
-                    <p>{{ event.description }}</p>
+        <!-- Previous Events Section -->
+        <div class="section-title">Previous Events</div>
+        <div class="event-list">
+            {% for event in events %}
+                {% if not event.is_upcoming %}
+                    <div class="event-card">
+                        <h5>{{ event.sport_name }}</h5>  <!-- Use sport_name instead of sport_type -->
+                        <p class="date-time">
+                             {{ event.event_date.strftime('%d %b. %y') }} 
+                              {{ event.event_time.strftime('%I:%M %p') }}
+                        </p>
+                        <p>
+                            <strong class="team-name">{{ event.home_team_name }}</strong> vs 
+                            <strong class="team-name">{{ event.away_team_name }}</strong>
+                        </p>
+                        <p>{{ event.venue_name }}</p>
+                        {% if event.description %}
+                            <p>{{ event.description }}</p>
+                        {% endif %}
+                    </div>
                 {% endif %}
-            </div>
-        {% endif %}
-    {% endfor %}
-</div>
+            {% endfor %}
+        </div>
+    </div>
 
-
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

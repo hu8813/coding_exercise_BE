@@ -8,173 +8,154 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* General Styles */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            display: flex;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            width: 250px;
-            background-color: #343a40;  /* Dark background consistent with Bootstrap's dark theme */
-            color: white;
-            padding: 20px;
-            height: 100vh;
-            position: fixed;
-        }
-
-        .sidebar h2 {
-            margin-top: 0;
-            color: #ffffff; /* Ensures the heading is visible */
-        }
-
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            color: #f8f9fa; /* Light color for links */
-            text-decoration: none;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .sidebar a:hover {
-            background-color: #495057; /* Darker background on hover */
-        }
-
-        /* Main Content Styles */
-        .main-content {
-            margin-left: 270px;
-            padding: 20px;
-            flex: 1;
-        }
-
-        /* Form and Success Message */
-        .form-container {
-            max-width: 600px;
-            margin: auto;
-        }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; display: flex; }
+        .sidebar { width: 250px; background-color: #343a40; color: white; padding: 20px; height: 100vh; position: fixed; }
+        .sidebar h2 { margin-top: 0; color: #ffffff; }
+        .sidebar a { display: flex; align-items: center; color: #f8f9fa; text-decoration: none; padding: 10px; margin: 10px 0; border-radius: 5px; transition: background-color 0.3s; }
+        .sidebar a:hover { background-color: #495057; }
+        .main-content { margin-left: 270px; padding: 20px; flex: 1; }
+        .form-container { max-width: 600px; margin: auto; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <h2>Backend</h2>
-        <a href="/" >
-            🏠 <span>Home</span>
-        </a>
-        <a href="/events" >
-            📅 <span>Events</span>
-        </a>
-        <a href="/add-event" >
-            ➕ <span>Add Event</span>
-        </a>
-        <a href="/docs" target="_blank" >
-            📚 <span>API Docs</span>
-        </a>
+        <a href="/">🏠 <span>Home</span></a>
+        <a href="/events">📅 <span>Events</span></a>
+        <a href="/add-event">➕ <span>Add Event</span></a>
+        <a href="/docs" target="_blank">📚 <span>API Docs</span></a>
     </div>
 
+    <div class="main-content">
+        <div class="form-container">
+            {% if message %}
+            <div class="alert alert-success" role="alert">
+                {{ message }}
+            </div>
+            {% endif %}
 
-<!-- Main Content -->
-<div class="main-content">
-    <div class="form-container">
-        <!-- Success Message Display -->
-        {% if message %}
-        <div class="alert alert-success" role="alert">
-            {{ message }}
+            <h2 class="text-center">Add New Event 🎉</h2>
+            <form action="/api/events" method="POST" id="event-form">
+                
+                <!-- Sport Type Selection -->
+                <div class="form-group">
+                    <label for="sport_type">Sport Type 🏅</label>
+                    <select class="form-control" id="sport_type" name="sport_type" onchange="handleSportChange()">
+                        <option value="">Select a sport type</option>
+                        {% for sport in sports %}
+                        <option value="{{ sport['name'] }}">{{ sport['name'] }}</option>
+                        {% endfor %}
+                        <option value="other">Other</option>
+                    </select>
+                    <input type="text" class="form-control mt-2" id="sport_custom" name="sport_custom" placeholder="Enter custom sport type" style="display:none;">
+                </div>
+
+                <!-- Date and Time -->
+                <div class="form-group">
+                    <label for="event_date">Date 📅</label>
+                    <input type="date" class="form-control" id="event_date" name="event_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="event_time">Time ⏰</label>
+                    <input type="time" class="form-control" id="event_time" name="event_time" required>
+                </div>
+
+                <!-- Home and Away Team Selection -->
+                <div class="form-group">
+                    <label for="home_team_id">Home Team 🏟️</label>
+                    <select class="form-control" id="home_team_id" name="home_team_id" onchange="handleTeamChange('home')">
+                        <option value="">Select a team</option>
+                        {% for team in teams %}
+                        <option value="{{ team.team_id }}">{{ team.name }}</option>
+                        {% endfor %}
+                        <option value="other">Other</option>
+                    </select>
+                    <input type="text" class="form-control mt-2" id="home_custom" name="home_custom" placeholder="Enter custom team name" style="display:none;">
+                </div>
+
+                <div class="form-group">
+                    <label for="away_team_id">Away Team ⚽</label>
+                    <select class="form-control" id="away_team_id" name="away_team_id" onchange="handleTeamChange('away')">
+                        <option value="">Select a team</option>
+                        {% for team in teams %}
+                        <option value="{{ team.team_id }}">{{ team.name }}</option>
+                        {% endfor %}
+                        <option value="other">Other</option>
+                    </select>
+                    <input type="text" class="form-control mt-2" id="away_custom" name="away_custom" placeholder="Enter custom team name" style="display:none;">
+                </div>
+
+                <!-- Venue Selection -->
+                <div class="form-group">
+                    <label for="venue_id">Venue 🏟️</label>
+                    <select class="form-control" id="venue_id" name="venue_id" onchange="handleVenueChange()">
+                        <option value="">Select a venue</option>
+                        {% for venue in venues %}
+                        <option value="{{ venue.venue_id }}">{{ venue.name }}</option>
+                        {% endfor %}
+                        <option value="other">Other</option>
+                    </select>
+                    <input type="text" class="form-control mt-2" id="venue_custom" name="venue_custom" placeholder="Enter custom venue name" style="display:none;">
+                </div>
+                
+                <!-- Description -->
+                <div class="form-group">
+                    <label for="description">Description 📝</label>
+                    <textarea class="form-control" id="description" name="description"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-success btn-block">Add Event ✔️</button>
+            </form>
         </div>
-        {% endif %}
-
-        <h2 class="text-center">Add New Event 🎉</h2>
-        <form action="/api/events" method="POST" id="event-form">
-            <div class="form-group">
-                <label for="sport_type">Sport Type 🏅</label>
-                <input type="text" class="form-control" id="sport_type" name="sport_type" required>
-            </div>
-            <div class="form-group">
-                <label for="event_date">Date 📅</label>
-                <input type="date" class="form-control" id="event_date" name="event_date" required>
-            </div>
-            <div class="form-group">
-                <label for="event_time">Time ⏰</label>
-                <input type="time" class="form-control" id="event_time" name="event_time" required>
-            </div>
-            <div class="form-group">
-                <label for="home_team_id">Home Team 🏟️</label>
-                <select class="form-control" id="home_team_id" name="home_team_id" onchange="handleTeamChange('home')">
-                    <option value="">Select a team</option>
-                    {% for team in teams %}
-                    <option value="{{ team.team_id }}">{{ team.name }}</option>
-                    {% endfor %}
-                    <option value="other">Other</option>
-                </select>
-                <input type="text" class="form-control mt-2" id="home_custom" name="home_custom" placeholder="Enter custom team name" style="display:none;">
-            </div>
-            <div class="form-group">
-                <label for="away_team_id">Away Team ⚽</label>
-                <select class="form-control" id="away_team_id" name="away_team_id" onchange="handleTeamChange('away')">
-                    <option value="">Select a team</option>
-                    {% for team in teams %}
-                    <option value="{{ team.team_id }}">{{ team.name }}</option>
-                    {% endfor %}
-                    <option value="other">Other</option>
-                </select>
-                <input type="text" class="form-control mt-2" id="away_custom" name="away_custom" placeholder="Enter custom team name" style="display:none;">
-            </div>
-            <div class="form-group">
-                <label for="venue_id">Venue 🏟️</label>
-                <select class="form-control" id="venue_id" name="venue_id" onchange="handleVenueChange()">
-                    <option value="">Select a venue</option>
-                    {% for venue in venues %}
-                    <option value="{{ venue.venue_id }}">{{ venue.name }}</option>
-                    {% endfor %}
-                    <option value="other">Other</option>
-                </select>
-                <input type="text" class="form-control mt-2" id="venue_custom" name="venue_custom" placeholder="Enter custom venue name" style="display:none;">
-            </div>
-            
-            <div class="form-group">
-                <label for="description">Description 📝</label>
-                <textarea class="form-control" id="description" name="description"></textarea>
-            </div>
-            <button type="submit" class="btn btn-success btn-block">Add Event ✔️</button>
-        </form>
     </div>
-</div>
-<script>
-    function handleTeamChange(type) {
-        const select = type === 'home' ? document.getElementById('home_team_id') : document.getElementById('away_team_id');
-        const customInput = type === 'home' ? document.getElementById('home_custom') : document.getElementById('away_custom');
+
+    <script>
+        function handleSportChange() {
+            const select = document.getElementById('sport_type');
+            const customInput = document.getElementById('sport_custom');
     
-        if (select.value === 'other') {
-            customInput.style.display = 'block';
-            customInput.required = true; // Make it required
-        } else {
-            customInput.style.display = 'none';
-            customInput.value = ''; // Clear the input
-            customInput.required = false; // Remove required
+            if (select.value === 'other') {
+                customInput.style.display = 'block';
+                customInput.required = true;
+            } else {
+                customInput.style.display = 'none';
+                customInput.value = '';
+                customInput.required = false;
+            }
         }
-    }
+
+        function handleTeamChange(type) {
+            const select = type === 'home' ? document.getElementById('home_team_id') : document.getElementById('away_team_id');
+            const customInput = type === 'home' ? document.getElementById('home_custom') : document.getElementById('away_custom');
     
-    function handleVenueChange() {
-        const select = document.getElementById('venue_id');
-        const customInput = document.getElementById('venue_custom');
-    
-        if (select.value === 'other') {
-            customInput.style.display = 'block';
-            customInput.required = true; // Make it required
-        } else {
-            customInput.style.display = 'none';
-            customInput.value = ''; // Clear the input
-            customInput.required = false; // Remove required
+            if (select.value === 'other') {
+                customInput.style.display = 'block';
+                customInput.required = true;
+            } else {
+                customInput.style.display = 'none';
+                customInput.value = '';
+                customInput.required = false;
+            }
         }
-    }
+    
+        function handleVenueChange() {
+            const select = document.getElementById('venue_id');
+            const customInput = document.getElementById('venue_custom');
+    
+            if (select.value === 'other') {
+                customInput.style.display = 'block';
+                customInput.required = true;
+            } else {
+                customInput.style.display = 'none';
+                customInput.value = '';
+                customInput.required = false;
+            }
+        }
     </script>
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
