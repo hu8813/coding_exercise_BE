@@ -67,13 +67,13 @@
         }
 
         .event-card {
-            background-color: #ffffff;
             border: 1px solid #ddd;
             border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             padding: 15px;
             transition: box-shadow 0.3s;
             position: relative; /* For positioning the icons */
+            color: #ffffff; /* Change text color to white for better contrast */
         }
 
         .event-card:hover {
@@ -81,12 +81,12 @@
         }
 
         .event-card h5 {
-            color: #007bff;
+            color: #ffffff;
         }
 
         .date-time {
             font-size: 0.9em;
-            color: #555;
+            color: #ddd; /* Lighter text for better readability */
         }
 
         .team-name {
@@ -116,15 +116,43 @@
         .event-icons i:hover {
             color: #007bff; /* Change color on hover */
         }
+
+        /* Additional Icon Styles */
+        .icon {
+            margin-right: 5px; /* Spacing for icons */
+        }
+
+        /* Sport Color Classes */
+        .football { background-color: #2E7D32; } /* Dark Green */
+        .basketball { background-color: #BF360C; } /* Dark Orange */
+        .cricket { background-color: #ababab; } /* Dark Orange */
+
+        .tennis { background-color: #FF6F00; color: #333; } /* Darker Yellow */
+        .hockey { background-color: #4A148C; } /* Dark Purple */
+        .rugby-union { background-color: #B71C1C; } /* Dark Red */
+        .beach-volleyball { background-color: #F57F17; } /* Amber */
+        .professional-golf { background-color: #1B5E20; } /* Forest Green */
+        .international-badminton { background-color: #FBC02D; } /* Golden Yellow */
+        .olympic-table-tennis { background-color: #E64A19; } /* Deep Orange */
+        .olympic-swimming { background-color: #00796B; } /* Teal */
+        .professional-cycling { background-color: #FFD600; } /* Bright Yellow */
+        .volleyball { background-color: #8E24AA; } /* Dark Purple */
+        .rugby { background-color: #C2185B; } /* Pink */
+        .handball { background-color: #0288D1; } /* Light Blue */
+        .table-tennis { background-color: #D32F2F; } /* Dark Red */
+        .badminton { background-color: #388E3C; } /* Dark Green */
+        .golf { background-color: #FFB300; } /* Gold */
+        .lacrosse { background-color: #6A1B9A; } /* Purple */
+
     </style>
 </head>
 <body>
     <div class="sidebar">
         <h2>Backend</h2>
-        <a href="/" >🏠 <span>Home</span></a>
-        <a href="/events" >📅 <span>Events</span></a>
-        <a href="/add-event" >➕ <span>Add Event</span></a>
-        <a href="/docs" target="_blank" >📚 <span>API Docs</span></a>
+        <a href="/">🏠 <span>Home</span></a>
+        <a href="/events">📅 <span>Events</span></a>
+        <a href="/add-event">➕ <span>Add Event</span></a>
+        <a href="/docs" target="_blank">📚 <span>API Docs</span></a>
     </div>
 
     <!-- Main Content -->
@@ -138,21 +166,23 @@
         <div class="event-list">
             {% for event in events %}
                 {% if event.is_upcoming %}
-                    <div class="event-card">
+                    <div class="event-card tennis  {{ event.sport_name | lower }}">
                         <div class="event-icons">
-                            <i class="fas fa-edit" xonclick="editEvent('{{ event.id }}')"></i>
-                            <i class="fas fa-trash-alt" xonclick="deleteEvent('{{ event.id }}')"></i>
+                            <i class="fas fa-edit" onclick="editEvent('{{ event.id }}')"></i>
+                            <i class="fas fa-trash-alt" onclick="deleteEvent('{{ event.id }}')"></i>
                         </div>
                         <h5>{{ event.sport_name }}</h5>
                         <p class="date-time">
-                             {{ event.event_date.strftime('%d %b. %y') }} 
-                             {{ event.event_time.strftime('%I:%M %p') }}
+                             <i class="fas fa-calendar-alt icon"></i>{{ event.event_date.strftime('%d %b. %y') }} 
+                             <i class="fas fa-clock icon"></i>{{ event.event_time.strftime('%I:%M %p') }}
                         </p>
                         <p>
                             <strong class="team-name">{{ event.home_team_name }}</strong> vs 
                             <strong class="team-name">{{ event.away_team_name }}</strong>
                         </p>
-                        <p>{{ event.venue_name }}</p>
+                        <p>
+                            <i class="fas fa-map-marker-alt icon"></i>{{ event.venue_name }}
+                        </p>
                         {% if event.description %}
                             <p>{{ event.description }}</p>
                         {% endif %}
@@ -166,21 +196,23 @@
         <div class="event-list">
             {% for event in events %}
                 {% if not event.is_upcoming %}
-                    <div class="event-card">
+                    <div class="event-card {{ event.sport_name | lower }}">
                         <div class="event-icons">
-                            <i class="fas fa-edit" xonclick="editEvent('{{ event.id }}')"></i>
-                            <i class="fas fa-trash-alt" xonclick="deleteEvent('{{ event.id }}')"></i>
+                            <i class="fas fa-edit" onclick="editEvent('{{ event.id }}')"></i>
+                            <i class="fas fa-trash-alt" onclick="deleteEvent('{{ event.id }}')"></i>
                         </div>
                         <h5>{{ event.sport_name }}</h5>
                         <p class="date-time">
-                             {{ event.event_date.strftime('%d %b. %y') }} 
-                              {{ event.event_time.strftime('%I:%M %p') }}
+                             <i class="fas fa-calendar-alt icon"></i>{{ event.event_date.strftime('%d %b. %y') }} 
+                             <i class="fas fa-clock icon"></i>{{ event.event_time.strftime('%I:%M %p') }}
                         </p>
                         <p>
                             <strong class="team-name">{{ event.home_team_name }}</strong> vs 
                             <strong class="team-name">{{ event.away_team_name }}</strong>
                         </p>
-                        <p>{{ event.venue_name }}</p>
+                        <p>
+                            <i class="fas fa-map-marker-alt icon"></i>{{ event.venue_name }}
+                        </p>
                         {% if event.description %}
                             <p>{{ event.description }}</p>
                         {% endif %}
