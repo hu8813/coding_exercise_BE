@@ -100,7 +100,8 @@ async def get_events(conn) -> List[dict]:
 @app.get("/events", response_class=HTMLResponse)
 async def view_events(request: Request, conn=Depends(get_db_connection_dependency)):
     events = await get_events(conn)  # Fetch all events from the database
-    return templates.TemplateResponse("events.html", {"request": request, "events": events})
+    today = datetime.now().date()
+    return templates.TemplateResponse("events.html", {"request": request, "events": events, "today":today})
 
 
 @app.get("/api/events", response_model=List[dict])

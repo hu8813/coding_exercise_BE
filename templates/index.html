@@ -249,35 +249,50 @@
         function showEventDetails(events) {
             const eventDetails = document.getElementById('eventDetails');
             eventDetails.innerHTML = ''; // Clear previous details
-        
+            
             events.forEach(event => {
-                // Use the teams and venues global arrays to find names based on IDs
-                const homeTeam = teams.find(team => team.team_id === event.home_team_id); // Change here
-                const awayTeam = teams.find(team => team.team_id === event.away_team_id); // Change here
-                const venue = venues.find(venue => venue.venue_id === event.venue_id); // Correctly access venue
+                // Find the home and away teams, and the venue
+                const homeTeam = teams.find(team => team.team_id === event.home_team_id);
+                const awayTeam = teams.find(team => team.team_id === event.away_team_id);
+                const venue = venues.find(venue => venue.venue_id === event.venue_id);
         
+                // Format the event details
                 const eventDetail = document.createElement('div');
+                const eventDate = new Date(`${event.event_date}T${event.event_time}`); // Create date object for formatting
+                const formattedDate = eventDate.toLocaleString('en-US', { day: 'numeric', month: 'long', hour: 'numeric', minute: 'numeric', hour12: false }).replace(',', ''); // Format as "20 Nov 17:05"
+                
+                // Prepare the text display
+                const homeTeamName = homeTeam ? homeTeam.name : '';
+                const awayTeamName = awayTeam ? awayTeam.name : '';
+                const venueName = venue ? venue.name : '';
+                
+                // Create readable format
                 eventDetail.innerHTML = `
-                    <h3>${event.sport_type} - ${event.event_date}</h3>
-                    <p>Time: ${event.event_time}</p>
-                    <p>Home Team: ${homeTeam ? homeTeam.name : 'N/A'}</p>
-                    <p>Away Team: ${awayTeam ? awayTeam.name : 'N/A'}</p>
-                    <p>Venue: ${venue ? venue.name : 'N/A'}</p>
-                    <p>Description: ${event.description || 'No description available'}</p>
+                    <p>${formattedDate}</p>
+                    <p>${homeTeamName} vs ${awayTeamName}</p>
+                    <p>${venueName}</p>
+                    <p>${event.description || ''}</p> <!-- Show empty text if description is not available -->
                     <hr>
                 `;
                 eventDetails.appendChild(eventDetail);
             });
-        
+            
             // Show the modal
-            document.getElementById('eventModal').style.display = 'block';
+            const modal = document.getElementById('eventModal');
+            modal.style.display = 'block';
         }
         
-        
-
         function closeModal() {
             document.getElementById('eventModal').style.display = 'none';
         }
+
+        // Close modal when clicking outside the modal content
+        window.onclick = function(event) {
+            const modal = document.getElementById('eventModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
 
         document.addEventListener("DOMContentLoaded", loadCalendar);
 
