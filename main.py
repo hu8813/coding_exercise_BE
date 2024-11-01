@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 from typing import List, Optional
+import ssl
 
 load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -21,8 +22,9 @@ if not PASSWORD:
 
 
 async def get_db_connection():
-    return await asyncpg.connect(DATABASE_URL)
-
+    ssl_context = ssl.create_default_context()
+    
+    return await asyncpg.connect(DATABASE_URL, ssl=ssl_context)
 
 async def initialize_database(conn):
     try:
