@@ -87,38 +87,41 @@ async def get_venues(conn):
         print(f"Error fetching venues: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error fetching venues")
 
-async def get_events(conn) -> List[dict]:
-    try:
-        # Corrected SQL query with the appropriate ID references
-        query = """
-        SELECT 
-            e.sport_type, 
-            e.event_date, 
-            e.event_time, 
-            ht.name AS home_team_name, 
-            at.name AS away_team_name, 
-            v.name AS venue_name, 
-            e.description
-        FROM 
-            events e
-        LEFT JOIN 
-            teams ht ON e.home_team_id = ht.team_id  -- Corrected to team_id
-        LEFT JOIN 
-            teams at ON e.away_team_id = at.team_id  -- Corrected to team_id
-        LEFT JOIN 
-            venues v ON e.venue_id = v.venue_id      -- Corrected to venue_id
-        ORDER BY 
-            e.event_date ASC, e.event_time ASC
-        """
-        
-        events = await conn.fetch(query)
-        
-        # Return a list of dictionaries, converting each event row into a dict
-        return [dict(event) for event in events]
+async def get_events(conn):
+    query = """
+    SELECT e.event_id, e.sport_type, e.event_date, e.event_time, 
+           t1.name AS home_team_name, 
+           t2.name AS away_team_name, 
+           v.name AS venue_name, 
+           e.description
+    FROM events e
+    JOIN teams t1 ON e.home_team_id = t1.team_id
+    JOIN teams t2 ON e.away_team_id = t2.team_id
+    JOIN venues v ON e.venue_id = v.venue_id
+    ORDER BY e.event_date, e.event_time;
+    """
     
-    except Exception as e:
-        print(f"Error fetching events: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error fetching events")
+    rows = await conn.fetch(query)
+    events = []
+    today = datetime.now()
+
+    for row in rows:
+        event_date_time = datetime.combine(row['event_date'], row['event_time'])
+        is_upcoming = event_date_time > today
+        events.append({
+            'event_id': row['event_id'],
+            'sport_type': row['sport_type'],
+            'event_date': row['event_date'],
+            'event_time': row['event_time'],
+            'home_team_name': row['home_team_name'],
+            'away_team_name': row['away_team_name'],
+            'venue_name': row['venue_name'],
+            'description': row['description'],
+            'is_upcoming': is_upcoming
+        })
+
+    return events
+
 
     
 @app.get("/events", response_class=HTMLResponse)
@@ -166,20 +169,64 @@ async def get_event_details(event_id: int, conn=Depends(get_db_connection_depend
         print(f"Error fetching event details: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error fetching event details")
 
-
 @app.post("/api/events")
 async def create_event(
     sport_type: str = Form(...),
     event_date: str = Form(...),
     event_time: str = Form(...),
-    home_team_id: Optional[int] = Form(None),
-    away_team_id: Optional[int] = Form(None),
-    venue_id: Optional[int] = Form(None),
+    home_team_id: Optional[str] = Form(None),
+    away_team_id: Optional[str] = Form(None),
+    venue_id: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
+    home_custom: Optional[str] = Form(None),
+    away_custom: Optional[str] = Form(None),
+    venue_custom: Optional[str] = Form(None),
     conn=Depends(get_db_connection_dependency)
 ):
     event_date_obj = datetime.strptime(event_date, "%Y-%m-%d").date()
     event_time_obj = datetime.strptime(event_time, "%H:%M").time()
+
+    # Handle home team
+    if home_custom:
+        # Insert custom home team into the database
+        home_team_id = await conn.fetchval(
+            """
+            INSERT INTO teams (name) VALUES ($1) RETURNING team_id
+            """,
+            home_custom
+        )
+
+    elif home_team_id is not None:
+        # If home_team_id is provided, ensure it's an integer
+        home_team_id = int(home_team_id)
+
+    # Handle away team
+    if away_custom:
+        # Insert custom away team into the database
+        away_team_id = await conn.fetchval(
+            """
+            INSERT INTO teams (name) VALUES ($1) RETURNING team_id
+            """,
+            away_custom
+        )
+
+    elif away_team_id is not None:
+        # If away_team_id is provided, ensure it's an integer
+        away_team_id = int(away_team_id)
+
+    # Handle venue
+    if venue_custom:
+        # Insert custom venue into the database
+        venue_id = await conn.fetchval(
+            """
+            INSERT INTO venues (name) VALUES ($1) RETURNING venue_id
+            """,
+            venue_custom
+        )
+
+    elif venue_id is not None:
+        # If venue_id is provided, ensure it's an integer
+        venue_id = int(venue_id)
 
     try:
         await conn.execute(
@@ -193,8 +240,8 @@ async def create_event(
         print(f"Error: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error creating event")
 
-    # Redirect to /add-event with success message
     return RedirectResponse(url="/add-event?message=Event created successfully.", status_code=status.HTTP_303_SEE_OTHER)
+
 
 
 @app.get("/add-event", response_class=HTMLResponse)

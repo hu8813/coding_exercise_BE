@@ -104,28 +104,38 @@
             </div>
             <div class="form-group">
                 <label for="home_team_id">Home Team 🏟️</label>
-                <select class="form-control" id="home_team_id" name="home_team_id">
+                <select class="form-control" id="home_team_id" name="home_team_id" onchange="handleTeamChange('home')">
+                    <option value="">Select a team</option>
                     {% for team in teams %}
                     <option value="{{ team.team_id }}">{{ team.name }}</option>
                     {% endfor %}
+                    <option value="other">Other</option>
                 </select>
+                <input type="text" class="form-control mt-2" id="home_custom" name="home_custom" placeholder="Enter custom team name" style="display:none;">
             </div>
             <div class="form-group">
                 <label for="away_team_id">Away Team ⚽</label>
-                <select class="form-control" id="away_team_id" name="away_team_id">
+                <select class="form-control" id="away_team_id" name="away_team_id" onchange="handleTeamChange('away')">
+                    <option value="">Select a team</option>
                     {% for team in teams %}
                     <option value="{{ team.team_id }}">{{ team.name }}</option>
                     {% endfor %}
+                    <option value="other">Other</option>
                 </select>
+                <input type="text" class="form-control mt-2" id="away_custom" name="away_custom" placeholder="Enter custom team name" style="display:none;">
             </div>
             <div class="form-group">
                 <label for="venue_id">Venue 🏟️</label>
-                <select class="form-control" id="venue_id" name="venue_id">
+                <select class="form-control" id="venue_id" name="venue_id" onchange="handleVenueChange()">
+                    <option value="">Select a venue</option>
                     {% for venue in venues %}
                     <option value="{{ venue.venue_id }}">{{ venue.name }}</option>
                     {% endfor %}
+                    <option value="other">Other</option>
                 </select>
+                <input type="text" class="form-control mt-2" id="venue_custom" name="venue_custom" placeholder="Enter custom venue name" style="display:none;">
             </div>
+            
             <div class="form-group">
                 <label for="description">Description 📝</label>
                 <textarea class="form-control" id="description" name="description"></textarea>
@@ -134,7 +144,35 @@
         </form>
     </div>
 </div>
-
+<script>
+    function handleTeamChange(type) {
+        const select = type === 'home' ? document.getElementById('home_team_id') : document.getElementById('away_team_id');
+        const customInput = type === 'home' ? document.getElementById('home_custom') : document.getElementById('away_custom');
+    
+        if (select.value === 'other') {
+            customInput.style.display = 'block';
+            customInput.required = true; // Make it required
+        } else {
+            customInput.style.display = 'none';
+            customInput.value = ''; // Clear the input
+            customInput.required = false; // Remove required
+        }
+    }
+    
+    function handleVenueChange() {
+        const select = document.getElementById('venue_id');
+        const customInput = document.getElementById('venue_custom');
+    
+        if (select.value === 'other') {
+            customInput.style.display = 'block';
+            customInput.required = true; // Make it required
+        } else {
+            customInput.style.display = 'none';
+            customInput.value = ''; // Clear the input
+            customInput.required = false; // Remove required
+        }
+    }
+    </script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
