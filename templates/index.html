@@ -168,30 +168,82 @@
             margin-bottom: 10px;
         }
 
-        .autocomplete-list {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: white;
-            position: absolute;
-            z-index: 999;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .autocomplete-item {
-            padding: 10px;
-            cursor: pointer;
-        }
-
-        .autocomplete-item:hover {
-            background-color: #f0f0f0;
-        }
-
-        /* Custom Team Input */
         .custom-team-input {
             display: none; /* Hidden by default */
         }
     </style>
+    <script>
+        function toggleCustomTeamInput(selectElement, teamType) {
+            const customInput = document.getElementById(`${teamType}_team_custom`);
+            if (selectElement.value === 'custom') {
+                customInput.style.display = 'block';
+                customInput.value = '';
+            } else {
+                customInput.style.display = 'none';
+            }
+        }
+
+        function toggleCustomVenueInput() {
+            const venueSelect = document.getElementById('venue_id');
+            const customVenueInput = document.getElementById('venue_custom');
+            if (venueSelect.value === 'custom') {
+                customVenueInput.style.display = 'block';
+                customVenueInput.value = '';
+            } else {
+                customVenueInput.style.display = 'none';
+            }
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+
+            // Handle custom team names
+            const homeTeamCustom = document.getElementById('home_team_custom');
+            const awayTeamCustom = document.getElementById('away_team_custom');
+            const venueCustom = document.getElementById('venue_custom');
+
+            if (homeTeamCustom.value) {
+                formData.set('home_team_id', homeTeamCustom.value);
+            }
+
+            if (awayTeamCustom.value) {
+                formData.set('away_team_id', awayTeamCustom.value);
+            }
+
+            if (venueCustom.value) {
+                formData.set('venue_id', venueCustom.value);
+            }
+
+            try {
+                const response = await fetch('/api/event/', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const result = await response.json();
+                console.log('Event created:', result);
+                closeModal();
+                // Optionally refresh the events or update the calendar display
+            } catch (error) {
+                console.error('Error creating event:', error);
+            }
+        }
+
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+
+        function openEventDetails(eventId) {
+            // Implement this function to fetch and display event details
+        }
+    </script>
 </head>
 <body>
     <header>
@@ -226,21 +278,12 @@
         </ul>
     </div>
 
-    <!-- Event Details Modal -->
-    <div id="eventDetailsModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>Event Details</h2>
-            <div id="eventDetails"></div>
-        </div>
-    </div>
-
     <!-- Add Event Modal -->
     <div id="eventFormModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
             <h2>Add New Event</h2>
-            <form class="event-form" id="addEventForm" action="/api/event/" method="post" onsubmit="return handleSubmit(event)">
+            <form class="event-form" id="addEventForm" action="/api/event/" method="post">
                 <label for="sport_type">Sport Type:</label>
                 <input type="text" id="sport_type" name="sport_type" required>
 
@@ -271,99 +314,27 @@
                 <input type="text" id="away_team_custom" class="custom-team-input" name="away_team_custom" placeholder="Enter new away team name" autocomplete="off">
 
                 <label for="venue_id">Select Venue:</label>
-                <select id="venue_id" name="venue_id" onchange="toggleCustomVenueInput()">
+                <select id="venue_id" name="venue_id" onchange="toggleCustomVenueInput()" required>
                     <option value="">Select an existing venue</option>
-                    <!-- Dynamically populate venues from the database -->
                     {% for venue in venues %}
                     <option value="{{ venue.venue_id }}">{{ venue.name }}</option>
                     {% endfor %}
-                    <option value="custom">Custom Venue</option> <!-- Add option for custom venues -->
+                    <option value="custom">Custom Venue</option>
                 </select>
-
-                <label for="custom_venue" id="custom_venue_label" style="display:none;">Custom Venue:</label>
-                <input type="text" id="custom_venue" name="custom_venue" style="display:none;" placeholder="Enter custom venue name">
+                <input type="text" id="venue_custom" class="custom-team-input" name="venue_custom" placeholder="Enter new venue name" autocomplete="off">
 
                 <button type="submit">Add Event</button>
             </form>
         </div>
     </div>
 
-    <script>
-        function toggleCustomTeamInput(selectElement, teamType) {
-            const customInput = document.getElementById(`${teamType}_team_custom`);
-            if (selectElement.value === 'custom') {
-                customInput.style.display = 'block';
-            } else {
-                customInput.style.display = 'none';
-            }
-        }
-
-        function toggleCustomVenueInput() {
-            const venueSelect = document.getElementById('venue_id');
-            const customVenueInput = document.getElementById('custom_venue');
-            const customVenueLabel = document.getElementById('custom_venue_label');
-
-            if (venueSelect.value === "custom") {
-                customVenueInput.style.display = 'block';
-                customVenueLabel.style.display = 'block';
-            } else {
-                customVenueInput.style.display = 'none';
-                customVenueLabel.style.display = 'none';
-            }
-        }
-
-        function handleSubmit(event) {
-            const homeTeamSelect = document.getElementById('home_team_id');
-            const awayTeamSelect = document.getElementById('away_team_id');
-            const venueSelect = document.getElementById('venue_id');
-
-            // Handle custom home team
-            if (homeTeamSelect.value === 'custom') {
-                event.target.home_team_id.value = document.getElementById('home_team_custom').value;
-            }
-
-            // Handle custom away team
-            if (awayTeamSelect.value === 'custom') {
-                event.target.away_team_id.value = document.getElementById('away_team_custom').value;
-            }
-
-            // Handle custom venue
-            if (venueSelect.value === 'custom' || venueSelect.value === '') {
-                event.target.venue_id.value = document.getElementById('custom_venue').value;
-            }
-
-            return true; // Allow form submission
-        }
-
-        function openEventDetails(eventId) {
-            // Fetch event details via API
-            fetch(`/api/event/${eventId}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('eventDetails').innerHTML = `
-                        <p><strong>Sport Type:</strong> ${data.sport_type}</p>
-                        <p><strong>Date:</strong> ${data.event_date}</p>
-                        <p><strong>Time:</strong> ${data.event_time}</p>
-                        <p><strong>Home Team:</strong> ${data.home_team}</p>
-                        <p><strong>Away Team:</strong> ${data.away_team}</p>
-                        <p><strong>Venue:</strong> ${data.venue_name}</p>
-                    `;
-                    document.getElementById('eventDetailsModal').style.display = 'block';
-                });
-        }
-
-        function closeModal() {
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.style.display = 'none';
-            });
-        }
-
-        // Close modals when clicking outside
-        window.onclick = function(event) {
-            if (event.target.className === 'modal') {
-                closeModal();
-            }
-        }
-    </script>
+    <!-- Event Details Modal -->
+    <div id="eventDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Event Details</h2>
+            <div id="eventDetails"></div>
+        </div>
+    </div>
 </body>
 </html>

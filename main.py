@@ -5,7 +5,7 @@ import asyncpg
 import os
 from dotenv import load_dotenv
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 # Load environment variables
 load_dotenv()
@@ -113,9 +113,12 @@ async def create_event(
     sport_type: str = Form(...),
     event_date: Optional[str] = Form(None),  # Pass date as string in form
     event_time: Optional[str] = Form(None),  # Pass time as string in form
-    home_team_id: int = Form(...),
-    away_team_id: int = Form(...),
-    venue_id: int = Form(...),
+    home_team_id: Optional[str] = Form(...),  # Keep as str for custom handling
+    away_team_id: Optional[str] = Form(...),  # Keep as str for custom handling
+    venue_id: Optional[str] = Form(...),  # Keep as str for custom handling
+    home_team_custom: Optional[str] = Form(None),  # New field for custom home team
+    away_team_custom: Optional[str] = Form(None),  # New field for custom away team
+    venue_custom: Optional[str] = Form(None),  # New field for custom venue
     description: Optional[str] = Form(None),
     conn=Depends(get_db_connection_dependency)
 ):
@@ -128,19 +131,51 @@ async def create_event(
     print(f"Away Team ID: {away_team_id}")
     print(f"Venue ID: {venue_id}")
     print(f"Description: {description}")
+    print(f"Custom Home Team: {home_team_custom}")
+    print(f"Custom Away Team: {away_team_custom}")
+    print(f"Custom Venue: {venue_custom}")
 
     # Default date and time if not provided
     event_date_obj = datetime.strptime(event_date, "%Y-%m-%d").date() if event_date else datetime.now().date()
     event_time_obj = datetime.strptime(event_time, "%H:%M").time() if event_time else datetime.now().time()
 
-    # Proceed to insert event (assuming required foreign key validation exists)
+    # Initialize IDs
+    home_team_id_final = None
+    away_team_id_final = None
+    venue_id_final = None
+
+    # Handle Home Team
+    if home_team_custom:
+        home_team_id_final = await insert_custom_team(home_team_custom, conn)
+    elif home_team_id.isdigit():
+        home_team_id_final = int(home_team_id)
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Home Team ID")
+
+    # Handle Away Team
+    if away_team_custom:
+        away_team_id_final = await insert_custom_team(away_team_custom, conn)
+    elif away_team_id.isdigit():
+        away_team_id_final = int(away_team_id)
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Away Team ID")
+
+    # Handle Venue
+    if venue_custom:
+        venue_id_final = await insert_custom_venue(venue_custom, conn)
+    elif venue_id.isdigit():
+        venue_id_final = int(venue_id)
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Venue ID")
+
+    # Proceed to insert event
     try:
         await conn.execute(
             """
             INSERT INTO events (sport_type, event_date, event_time, home_team_id, away_team_id, venue_id, description)
             VALUES ($1, $2, $3, $4, $5, $6, $7)
             """,
-            sport_type, event_date_obj, event_time_obj, home_team_id, away_team_id, venue_id, description
+            sport_type, event_date_obj, event_time_obj, home_team_id_final, away_team_id_final, venue_id_final, description
         )
     except Exception as e:
         print(f"Error: {e}")
@@ -148,7 +183,39 @@ async def create_event(
 
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
+async def insert_custom_team(team_name: str, conn) -> int:
+    # Insert custom team into the database
+    try:
+        result = await conn.fetch(
+            """
+            INSERT INTO teams (name) VALUES ($1) RETURNING team_id
+            """, 
+            team_name
+        )
+        new_team_id = result[0][0]  # Fetch the newly created team's ID
+        return new_team_id
+    except Exception as e:
+        print(f"Error inserting custom team: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error inserting custom team")
+
+async def insert_custom_venue(venue_name: str, conn) -> int:
+    # Insert custom venue into the database
+    try:
+        result = await conn.fetch(
+            """
+            INSERT INTO venues (name) VALUES ($1) RETURNING venue_id
+            """, 
+            venue_name
+        )
+        new_venue_id = result[0][0]  # Fetch the newly created venue's ID
+        return new_venue_id
+    except Exception as e:
+        print(f"Error inserting custom venue: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error inserting custom venue")
+
+
 # Run the application
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, log_level="debug")
+
