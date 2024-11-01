@@ -18,7 +18,7 @@
         /* Sidebar Styles */
         .sidebar {
             width: 250px;
-            background-color: #343a40; /* Dark background consistent with Bootstrap's dark theme */
+            background-color: #343a40;
             color: white;
             padding: 20px;
             height: 100vh;
@@ -27,13 +27,13 @@
 
         .sidebar h2 {
             margin-top: 0;
-            color: #ffffff; /* Ensures the heading is visible */
+            color: #ffffff;
         }
 
         .sidebar a {
             display: flex;
             align-items: center;
-            color: #f8f9fa; /* Light color for links */
+            color: #f8f9fa;
             text-decoration: none;
             padding: 10px;
             margin: 10px 0;
@@ -42,7 +42,7 @@
         }
 
         .sidebar a:hover {
-            background-color: #495057; /* Darker background on hover */
+            background-color: #495057;
         }
 
         /* Main Content Styles */
@@ -67,12 +67,13 @@
         }
 
         .event-card {
-            background-color: #ffffff; /* White background for cards */
+            background-color: #ffffff;
             border: 1px solid #ddd;
             border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             padding: 15px;
             transition: box-shadow 0.3s;
+            position: relative; /* For positioning the icons */
         }
 
         .event-card:hover {
@@ -80,7 +81,7 @@
         }
 
         .event-card h5 {
-            color: #007bff; /* Bootstrap primary color for headings */
+            color: #007bff;
         }
 
         .date-time {
@@ -97,7 +98,23 @@
             margin-top: 30px;
             font-size: 1.5em;
             color: #333;
-            font-weight: bold; /* Bold title for better visibility */
+            font-weight: bold;
+        }
+
+        /* Icon Styles */
+        .event-icons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .event-icons i {
+            margin-left: 10px;
+            cursor: pointer; /* Change cursor to pointer */
+        }
+
+        .event-icons i:hover {
+            color: #007bff; /* Change color on hover */
         }
     </style>
 </head>
@@ -112,7 +129,9 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <header><h1>Events List</h1></header>
+        <header>
+            <h1>Events List</h1>
+        </header>
 
         <!-- Upcoming Events Section -->
         <div class="section-title">Upcoming Events 🎉</div>
@@ -120,7 +139,11 @@
             {% for event in events %}
                 {% if event.is_upcoming %}
                     <div class="event-card">
-                        <h5>{{ event.sport_name }}</h5>  <!-- Use sport_name instead of sport_type -->
+                        <div class="event-icons">
+                            <i class="fas fa-edit" xonclick="editEvent('{{ event.id }}')"></i>
+                            <i class="fas fa-trash-alt" xonclick="deleteEvent('{{ event.id }}')"></i>
+                        </div>
+                        <h5>{{ event.sport_name }}</h5>
                         <p class="date-time">
                              {{ event.event_date.strftime('%d %b. %y') }} 
                              {{ event.event_time.strftime('%I:%M %p') }}
@@ -144,7 +167,11 @@
             {% for event in events %}
                 {% if not event.is_upcoming %}
                     <div class="event-card">
-                        <h5>{{ event.sport_name }}</h5>  <!-- Use sport_name instead of sport_type -->
+                        <div class="event-icons">
+                            <i class="fas fa-edit" xonclick="editEvent('{{ event.id }}')"></i>
+                            <i class="fas fa-trash-alt" xonclick="deleteEvent('{{ event.id }}')"></i>
+                        </div>
+                        <h5>{{ event.sport_name }}</h5>
                         <p class="date-time">
                              {{ event.event_date.strftime('%d %b. %y') }} 
                               {{ event.event_time.strftime('%I:%M %p') }}
@@ -166,5 +193,31 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // JavaScript functions to handle edit and delete actions
+        function editEvent(eventId) {
+            // Redirect to the edit event page (replace with your actual edit URL)
+            window.location.href = `/edit-event/${eventId}`;
+        }
+
+        function deleteEvent(eventId) {
+            // Confirmation before deletion
+            if (confirm('Are you sure you want to delete this event?')) {
+                // Send a delete request to the server (replace with your actual delete URL)
+                fetch(`/api/events/${eventId}`, {
+                    method: 'DELETE'
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Event deleted successfully.');
+                        window.location.reload(); // Refresh the page to see the changes
+                    } else {
+                        alert('Failed to delete the event. Please try again.');
+                    }
+                }).catch(error => {
+                    alert('An error occurred. Please try again.');
+                });
+            }
+        }
+    </script>
 </body>
 </html>

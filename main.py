@@ -92,11 +92,16 @@ async def get_sports(conn):
 
 async def add_sport(conn, name: str):
     try:
-        await conn.execute("INSERT INTO sports (name) VALUES ($1)", name)
+        # Check if sport already exists
+        sport = await conn.fetchrow("SELECT sport_id FROM sports WHERE name = $1", name)
+        if sport:
+            return sport['sport_id']  # Return the existing sport ID
+        else:
+            # Insert new sport and return its ID
+            return await conn.fetchval("INSERT INTO sports (name) VALUES ($1) RETURNING sport_id", name)
     except Exception as e:
         print(f"Error adding sport: {e}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Error adding sport")
-
 
 @app.on_event("startup")
 async def startup_event():
@@ -211,7 +216,6 @@ async def get_event_details(event_id: int, conn=Depends(get_db_connection_depend
         print(f"Error fetching event details: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error fetching event details")
 
-
 @app.post("/api/events")
 async def create_event(
     sport_type: str = Form(...),           # This will be either sport_id or 'other'
@@ -232,20 +236,14 @@ async def create_event(
 
     # Handle sport type
     if sport_custom:
-        # Insert custom sport into the sports table and get its ID
-        sport_type = await conn.fetchval(
-            """
-            INSERT INTO sports (name) VALUES ($1) RETURNING sport_id
-            """,
-            sport_custom
-        )
+        # Use the add_sport function to get sport ID
+        sport_type = await add_sport(conn, sport_custom)
     elif sport_type is not None:
         # Ensure sport_type is an integer ID if it's not custom
         sport_type = int(sport_type)
 
     # Handle home team
     if home_custom:
-        # Insert custom home team into the database
         home_team_id = await conn.fetchval(
             """
             INSERT INTO teams (name) VALUES ($1) RETURNING team_id
@@ -257,7 +255,6 @@ async def create_event(
 
     # Handle away team
     if away_custom:
-        # Insert custom away team into the database
         away_team_id = await conn.fetchval(
             """
             INSERT INTO teams (name) VALUES ($1) RETURNING team_id
@@ -269,7 +266,6 @@ async def create_event(
 
     # Handle venue
     if venue_custom:
-        # Insert custom venue into the database
         venue_id = await conn.fetchval(
             """
             INSERT INTO venues (name, location) VALUES ($1, $1) RETURNING venue_id
