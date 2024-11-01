@@ -221,7 +221,7 @@ async def create_event(
         # Insert custom venue into the database
         venue_id = await conn.fetchval(
             """
-            INSERT INTO venues (name) VALUES ($1) RETURNING venue_id
+            INSERT INTO venues (name, location) VALUES ($1, $1) RETURNING venue_id
             """,
             venue_custom
         )
