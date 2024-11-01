@@ -178,16 +178,16 @@ async def add_event_form(request: Request, conn=Depends(get_db_connection_depend
     venues = await get_venues(conn)
     return templates.TemplateResponse("add_event.html", {"request": request, "teams": teams, "venues": venues, "message": message})
 
+
 @app.get("/", response_class=HTMLResponse)
 async def read_events(request: Request, session_id: str = Cookie(None), conn=Depends(get_db_connection_dependency)):
     if session_id != "authenticated":
         return RedirectResponse(url="/login")  # Redirect to login if not authenticated
-    
+
     events = await get_events(conn)  # Fetch events from the database
     teams = await get_teams(conn)  # Fetch teams from the database
     venues = await get_venues(conn)  # Fetch venues from the database
 
-    # Pass teams and venues to the template as well
     return templates.TemplateResponse("index.html", {
         "request": request,
         "events": events,
@@ -201,15 +201,14 @@ async def login_get(request: Request):
 
 @app.post("/login", response_class=HTMLResponse)
 async def login_post(request: Request, password: str = Form(...)):
-    print(f"Received password: {password}")  # Debugging: print received password
-    print(f"Stored password: {PASSWORD}")  # Debugging: print stored password
-
+    print(f"Received password: {password}")  # Debugging
     if password == PASSWORD:
         response = RedirectResponse(url="/")
         response.set_cookie(key="session_id", value="authenticated")
         return response
     else:
         return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid password"})
+    
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, log_level="debug")
