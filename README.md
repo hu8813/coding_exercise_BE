@@ -8,8 +8,7 @@ Check out the live demo: [Sports Event Calendar Demo](https://coding-exercise-be
 
 ## Features
 - Add sports events with date, time, sport type, teams, venue, and descriptions.
-- View all upcoming events.
-- Filter events by sport or date.
+- View all upcoming / previous events.
 - User-friendly interface.
 
 ## Database Structure
@@ -38,22 +37,26 @@ The application includes the following tables:
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+```
 
 ### Install Dependencies
 
 ```bash
-pip install fastapi[all] asyncpg python-dotenv
+pip install -r requirements.txt
+```
 
 ### Create a .env File
 - In the root directory of your project, create a file named `.env`.
 - Add the following environment variable to the `.env` file with your PostgreSQL database credentials:
-  ```plaintext
-  DATABASE_URL=postgresql://<username>:<password>@<hostname>:<port>/<database_name>
 
+  ```
+  DATABASE_URL=postgresql://<username>:<password>@<hostname>:<port>/<database_name>?sslmode=require
+  ADMIN_PWD=adminPasswordForBackend
+  ```
 ### Run the Application
 You can run the application using either of the following commands:
 
-```bash
+```
 python3 main.py
 ```
 
