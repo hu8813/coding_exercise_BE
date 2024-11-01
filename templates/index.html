@@ -170,34 +170,34 @@
         async function loadTeamsAndVenues() {
             try {
                 const teamsResponse = await fetch('/api/teams');
-                const teams = await teamsResponse.json();
-        
+                teams = await teamsResponse.json(); // Store teams in the global variable
+
                 const venuesResponse = await fetch('/api/venues');
-                const venues = await venuesResponse.json();
-        
-                // Populate teams in the DOM
-                const teamsList = document.getElementById('teams-list');
-                teamsList.innerHTML = ''; // Clear previous items
+                venues = await venuesResponse.json(); // Store venues in the global variable
+
+                // Populate teams dropdown
+                const teamsDropdown = document.getElementById('teams-dropdown');
+                teamsDropdown.innerHTML = '<option value="">Select a Team</option>'; // Clear previous items
                 teams.forEach(team => {
-                    const li = document.createElement('li');
-                    li.textContent = team.name;
-                    teamsList.appendChild(li);
+                    const option = document.createElement('option');
+                    option.value = team.id; // Assuming each team has a unique ID
+                    option.textContent = team.name;
+                    teamsDropdown.appendChild(option);
                 });
-        
-                // Populate venues in the DOM
-                const venuesList = document.getElementById('venues-list');
-                venuesList.innerHTML = ''; // Clear previous items
+
+                // Populate venues dropdown
+                const venuesDropdown = document.getElementById('venues-dropdown');
+                venuesDropdown.innerHTML = '<option value="">Select a Venue</option>'; // Clear previous items
                 venues.forEach(venue => {
-                    const li = document.createElement('li');
-                    li.textContent = venue.name;
-                    venuesList.appendChild(li);
+                    const option = document.createElement('option');
+                    option.value = venue.id; // Assuming each venue has a unique ID
+                    option.textContent = venue.name;
+                    venuesDropdown.appendChild(option);
                 });
             } catch (error) {
                 console.error('Error loading teams and venues:', error);
             }
         }
-        
-        
 
         async function loadEventsAndGenerateCalendar() {
             const response = await fetch('/api/events');
@@ -214,34 +214,34 @@
             calendar.innerHTML = '';
             const currentMonthYear = document.getElementById('currentMonthYear');
             currentMonthYear.innerText = `${year} - ${month + 1}`;
-        
+
             const date = new Date(year, month, 1);
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const startDay = date.getDay();
-        
+
             for (let i = 0; i < startDay; i++) {
                 const emptyDay = document.createElement('div');
                 emptyDay.className = 'calendar-day';
                 calendar.appendChild(emptyDay);
             }
-        
+
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'calendar-day';
                 dayDiv.innerHTML = day;
-        
+
                 const eventDateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
                 const dayEvents = events.filter(event => event.event_date === eventDateString);
-        
+
                 if (dayEvents.length > 0) {
                     const dot = document.createElement('div');
                     dot.className = 'event-dot';
                     dayDiv.appendChild(dot);
-        
+
                     // Add click event to show details in modal
                     dayDiv.onclick = () => showEventDetails(dayEvents);
                 }
-        
+
                 calendar.appendChild(dayDiv);
             }
         }
@@ -251,13 +251,18 @@
             eventDetails.innerHTML = ''; // Clear previous details
         
             events.forEach(event => {
+                // Use the teams and venues global arrays to find names based on IDs
+                const homeTeam = teams.find(team => team.id === event.home_team_id);
+                const awayTeam = teams.find(team => team.id === event.away_team_id);
+                const venue = venues.find(venue => venue.id === event.venue_id);
+        
                 const eventDetail = document.createElement('div');
                 eventDetail.innerHTML = `
                     <h3>${event.sport_type} - ${event.event_date}</h3>
                     <p>Time: ${event.event_time}</p>
-                    <p>Home Team: ${teams[event.home_team_id] || 'N/A'}</p>
-                    <p>Away Team: ${teams[event.away_team_id] || 'N/A'}</p>
-                    <p>Venue: ${venues[event.venue_id] || 'N/A'}</p>
+                    <p>Home Team: ${homeTeam ? homeTeam.name : 'N/A'}</p>
+                    <p>Away Team: ${awayTeam ? awayTeam.name : 'N/A'}</p>
+                    <p>Venue: ${venue ? venue.name : 'N/A'}</p>
                     <p>Description: ${event.description || 'No description available'}</p>
                     <hr>
                 `;
@@ -267,7 +272,6 @@
             // Show the modal
             document.getElementById('eventModal').style.display = 'block';
         }
-        
         
 
         function closeModal() {
@@ -299,29 +303,28 @@
 </head>
 <body>
     <!-- Sidebar -->
-<div class="sidebar" style="background-color: #f4f4f4; padding: 20px; width: 250px; border-right: 1px solid #ddd;">
-    <h2 style="font-size: 1.5em; color: #333;">Backend</h2>
-    <a href="/" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
-        🏠 <span style="margin-left: 8px;">Home</span>
-    </a>
-    <a href="/events" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
-        📅 <span style="margin-left: 8px;">Events</span>
-    </a>
-    <a href="/add-event" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
-        ➕ <span style="margin-left: 8px;">Add Event</span>
-    </a>
-    <a href="/docs" target="_blank" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
-        📚 <span style="margin-left: 8px;">API Docs</span>
-    </a>
-</div>
+    <div class="sidebar" style="background-color: #f4f4f4; padding: 20px; width: 250px; border-right: 1px solid #ddd;">
+        <h2 style="font-size: 1.5em; color: #333;">Backend</h2>
+        <a href="/" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
+            🏠 <span style="margin-left: 8px;">Home</span>
+        </a>
+        <a href="/events" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
+            📅 <span style="margin-left: 8px;">Events</span>
+        </a>
+        <a href="/add-event" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
+            ➕ <span style="margin-left: 8px;">Add Event</span>
+        </a>
+        <a href="/docs" target="_blank" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
+            📚 <span style="margin-left: 8px;">API Docs</span>
+        </a>
+    </div>
 
     <div class="main-content">
-        
         <div class="welcome-message">
             <h2>Welcome to the Sports Events Calendar!</h2>
             <p>Check out the upcoming events and manage your schedule effectively.</p>
         </div>
-        
+
         <header>
             <div class="month-navigation">
                 <button onclick="prevMonth()">◀️ Previous</button>
@@ -329,13 +332,15 @@
                 <button onclick="nextMonth()">Next ▶️</button>
             </div>
         </header>
-        
+
         <div id="calendar" class="calendar"></div>
+        
         <h2>Teams</h2>
-        <ul id="teams-list"></ul> <!-- Added teams list -->
+        <select id="teams-dropdown"></select>  
     
         <h2>Venues</h2>
-        <ul id="venues-list"></ul>
+        <select id="venues-dropdown"></select> 
+
         <div id="eventModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeModal()">&times;</span>
