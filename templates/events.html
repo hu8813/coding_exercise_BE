@@ -31,7 +31,8 @@
         }
 
         .sidebar a {
-            display: block;
+            display: flex;
+            align-items: center;
             color: white;
             text-decoration: none;
             padding: 10px;
@@ -61,7 +62,7 @@
         /* Events List Styles */
         .event-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
 
@@ -81,6 +82,15 @@
         .event-card h5 {
             color: #007bff;
         }
+
+        .date-time {
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .team-name {
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -88,10 +98,18 @@
 <!-- Sidebar -->
 <div class="sidebar">
     <h2>Backend</h2>
-    <a href="/">Home</a>
-    <a href="/events">Events</a>
-    <a href="/add-event">Add Event</a>
-    <a href="/docs">API Docs</a>
+    <a href="/">
+        <span>🏠 Home</span>
+    </a>
+    <a href="/events">
+        <span>📅 Events</span>
+    </a>
+    <a href="/add-event">
+        <span>➕ Add Event</span>
+    </a>
+    <a href="/docs" target="_blank">
+        <span>📚 API Docs</span>
+    </a>
 </div>
 
 <!-- Main Content -->
@@ -104,10 +122,11 @@
         {% for event in events %}
         <div class="event-card">
             <h5>{{ event.sport_type }}</h5>
-            <p><strong>Date:</strong> {{ event.event_date }}</p>
-            <p><strong>Time:</strong> {{ event.event_time }}</p>
-            <p><strong>Home Team:</strong> {{ event.home_team }}</p>
-            <p><strong>Away Team:</strong> {{ event.away_team }}</p>
+            <p class="date-time">
+                <strong>Date:</strong> {{ event.event_date.strftime('%d %b. %y') }} <br>
+                <strong>Time:</strong> {{ event.event_time.strftime('%I:%M %p') }}
+            </p>
+            <p><span class="team-name">{{ event.home_team }}</span> vs <span class="team-name">{{ event.away_team }}</span></p>
             <p><strong>Venue:</strong> {{ event.venue_name }}</p>
             <p><strong>Description:</strong> {{ event.description }}</p>
         </div>

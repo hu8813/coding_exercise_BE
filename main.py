@@ -67,20 +67,22 @@ async def startup_event():
     finally:
         await conn.close()
 
-
 async def get_teams(conn):
     try:
         teams = await conn.fetch("SELECT team_id, name FROM teams")
-        return [dict(team) for team in teams]
+        teams_list = [dict(team) for team in teams]
+        print("Fetched teams:", teams_list)  # Debugging: log the fetched teams
+        return teams_list
     except Exception as e:
         print(f"Error fetching teams: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error fetching teams")
 
-
 async def get_venues(conn):
     try:
         venues = await conn.fetch("SELECT venue_id, name FROM venues")
-        return [dict(venue) for venue in venues]
+        venues_list = [dict(venue) for venue in venues]
+        print("Fetched venues:", venues_list)  # Debugging: log the fetched venues
+        return venues_list
     except Exception as e:
         print(f"Error fetching venues: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error fetching venues")
@@ -176,20 +178,26 @@ async def add_event_form(request: Request, conn=Depends(get_db_connection_depend
     venues = await get_venues(conn)
     return templates.TemplateResponse("add_event.html", {"request": request, "teams": teams, "venues": venues, "message": message})
 
-
 @app.get("/", response_class=HTMLResponse)
 async def read_events(request: Request, session_id: str = Cookie(None), conn=Depends(get_db_connection_dependency)):
     if session_id != "authenticated":
         return RedirectResponse(url="/login")  # Redirect to login if not authenticated
     
     events = await get_events(conn)  # Fetch events from the database
-    return templates.TemplateResponse("index.html", {"request": request, "events": events})
+    teams = await get_teams(conn)  # Fetch teams from the database
+    venues = await get_venues(conn)  # Fetch venues from the database
 
+    # Pass teams and venues to the template as well
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "events": events,
+        "teams": teams,  # Include teams data
+        "venues": venues  # Include venues data
+    })
 
 @app.get("/login", response_class=HTMLResponse)
-async def login(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request, "error": None})
-
+async def login_get(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
 
 @app.post("/login", response_class=HTMLResponse)
 async def login_post(request: Request, password: str = Form(...)):
@@ -202,8 +210,6 @@ async def login_post(request: Request, password: str = Form(...)):
         return response
     else:
         return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid password"})
-
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, log_level="debug")

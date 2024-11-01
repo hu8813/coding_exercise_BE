@@ -168,28 +168,36 @@
         }
 
         async function loadTeamsAndVenues() {
-            // Load teams
-            const teamsResponse = await fetch('/api/teams');
-            if (teamsResponse.ok) {
-                const teamsData = await teamsResponse.json();
-                teamsData.forEach(team => {
-                    teams[team.id] = team.name; // Map team id to name
+            try {
+                const teamsResponse = await fetch('/api/teams');
+                const teams = await teamsResponse.json();
+        
+                const venuesResponse = await fetch('/api/venues');
+                const venues = await venuesResponse.json();
+        
+                // Populate teams in the DOM
+                const teamsList = document.getElementById('teams-list');
+                teamsList.innerHTML = ''; // Clear previous items
+                teams.forEach(team => {
+                    const li = document.createElement('li');
+                    li.textContent = team.name;
+                    teamsList.appendChild(li);
                 });
-            } else {
-                console.error("Failed to load teams");
-            }
-
-            // Load venues
-            const venuesResponse = await fetch('/api/venues');
-            if (venuesResponse.ok) {
-                const venuesData = await venuesResponse.json();
-                venuesData.forEach(venue => {
-                    venues[venue.id] = venue.name; // Map venue id to name
+        
+                // Populate venues in the DOM
+                const venuesList = document.getElementById('venues-list');
+                venuesList.innerHTML = ''; // Clear previous items
+                venues.forEach(venue => {
+                    const li = document.createElement('li');
+                    li.textContent = venue.name;
+                    venuesList.appendChild(li);
                 });
-            } else {
-                console.error("Failed to load venues");
+            } catch (error) {
+                console.error('Error loading teams and venues:', error);
             }
         }
+        
+        
 
         async function loadEventsAndGenerateCalendar() {
             const response = await fetch('/api/events');
@@ -241,7 +249,7 @@
         function showEventDetails(events) {
             const eventDetails = document.getElementById('eventDetails');
             eventDetails.innerHTML = ''; // Clear previous details
-
+        
             events.forEach(event => {
                 const eventDetail = document.createElement('div');
                 eventDetail.innerHTML = `
@@ -255,10 +263,12 @@
                 `;
                 eventDetails.appendChild(eventDetail);
             });
-
+        
             // Show the modal
             document.getElementById('eventModal').style.display = 'block';
         }
+        
+        
 
         function closeModal() {
             document.getElementById('eventModal').style.display = 'none';
@@ -288,13 +298,23 @@
     </script>
 </head>
 <body>
-    <div class="sidebar">
-        <h2>Backend</h2>
-        <a href="/">Home</a>
-        <a href="/events">Events</a>
-        <a href="/add-event">Add Event</a>
-        <a href="/docs">API Docs</a>
-    </div>
+    <!-- Sidebar -->
+<div class="sidebar" style="background-color: #f4f4f4; padding: 20px; width: 250px; border-right: 1px solid #ddd;">
+    <h2 style="font-size: 1.5em; color: #333;">Backend</h2>
+    <a href="/" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
+        🏠 <span style="margin-left: 8px;">Home</span>
+    </a>
+    <a href="/events" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
+        📅 <span style="margin-left: 8px;">Events</span>
+    </a>
+    <a href="/add-event" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
+        ➕ <span style="margin-left: 8px;">Add Event</span>
+    </a>
+    <a href="/docs" target="_blank" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
+        📚 <span style="margin-left: 8px;">API Docs</span>
+    </a>
+</div>
+
     <div class="main-content">
         
         <div class="welcome-message">
@@ -311,7 +331,11 @@
         </header>
         
         <div id="calendar" class="calendar"></div>
-        
+        <h2>Teams</h2>
+        <ul id="teams-list"></ul> <!-- Added teams list -->
+    
+        <h2>Venues</h2>
+        <ul id="venues-list"></ul>
         <div id="eventModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeModal()">&times;</span>
