@@ -67,17 +67,14 @@
         <h2>Login</h2>
         <form id="loginForm" action="/login" method="post">
             <input type="password" id="password" name="password" placeholder="Enter password" required>
-            <button type="submit">Login</button><br><br>
-            *Demo Password: demo123
+            <button type="submit">Login</button>
         </form>
-        <div id="error-message" class="error-message"></div>
+        <div id="error-message" class="error-message">
+            <!-- Display server-side error messages here -->
+            {% if error %}
+                {{ error }}
+            {% endif %}
+        </div>
     </div>
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const errorMessage = urlParams.get('error');
-        if (errorMessage) {
-            document.getElementById('error-message').innerText = errorMessage;
-        }
-    </script>
 </body>
 </html>
