@@ -18,7 +18,7 @@
         /* Sidebar Styles */
         .sidebar {
             width: 250px;
-            background-color: #007BFF;
+            background-color: #343a40;  /* Dark background consistent with Bootstrap's dark theme */
             color: white;
             padding: 20px;
             height: 100vh;
@@ -27,12 +27,13 @@
 
         .sidebar h2 {
             margin-top: 0;
-            color: white;
+            color: #ffffff; /* Ensures the heading is visible */
         }
 
         .sidebar a {
-            display: block;
-            color: white;
+            display: flex;
+            align-items: center;
+            color: #f8f9fa; /* Light color for links */
             text-decoration: none;
             padding: 10px;
             margin: 10px 0;
@@ -41,7 +42,7 @@
         }
 
         .sidebar a:hover {
-            background-color: #0056b3;
+            background-color: #495057; /* Darker background on hover */
         }
 
         /* Main Content Styles */
@@ -60,22 +61,21 @@
 </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar" style="background-color: #f4f4f4; padding: 20px; width: 250px; border-right: 1px solid #ddd;">
-    <h2 style="font-size: 1.5em; color: #333;">Backend</h2>
-    <a href="/" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
-        🏠 <span style="margin-left: 8px;">Home</span>
-    </a>
-    <a href="/events" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
-        📅 <span style="margin-left: 8px;">Events</span>
-    </a>
-    <a href="/add-event" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
-        ➕ <span style="margin-left: 8px;">Add Event</span>
-    </a>
-    <a href="/docs" target="_blank" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
-        📚 <span style="margin-left: 8px;">API Docs</span>
-    </a>
-</div>
+    <div class="sidebar">
+        <h2>Backend</h2>
+        <a href="/" >
+            🏠 <span>Home</span>
+        </a>
+        <a href="/events" >
+            📅 <span>Events</span>
+        </a>
+        <a href="/add-event" >
+            ➕ <span>Add Event</span>
+        </a>
+        <a href="/docs" target="_blank" >
+            📚 <span>API Docs</span>
+        </a>
+    </div>
 
 
 <!-- Main Content -->

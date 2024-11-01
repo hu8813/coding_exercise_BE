@@ -87,19 +87,43 @@ async def get_venues(conn):
         print(f"Error fetching venues: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error fetching venues")
 
-
 async def get_events(conn) -> List[dict]:
     try:
-        events = await conn.fetch("SELECT * FROM events ORDER BY event_date ASC, event_time ASC")
+        # Corrected SQL query with the appropriate ID references
+        query = """
+        SELECT 
+            e.sport_type, 
+            e.event_date, 
+            e.event_time, 
+            ht.name AS home_team_name, 
+            at.name AS away_team_name, 
+            v.name AS venue_name, 
+            e.description
+        FROM 
+            events e
+        LEFT JOIN 
+            teams ht ON e.home_team_id = ht.team_id  -- Corrected to team_id
+        LEFT JOIN 
+            teams at ON e.away_team_id = at.team_id  -- Corrected to team_id
+        LEFT JOIN 
+            venues v ON e.venue_id = v.venue_id      -- Corrected to venue_id
+        ORDER BY 
+            e.event_date ASC, e.event_time ASC
+        """
+        
+        events = await conn.fetch(query)
+        
+        # Return a list of dictionaries, converting each event row into a dict
         return [dict(event) for event in events]
+    
     except Exception as e:
         print(f"Error fetching events: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error fetching events")
 
-
+    
 @app.get("/events", response_class=HTMLResponse)
 async def view_events(request: Request, conn=Depends(get_db_connection_dependency)):
-    events = await get_events(conn)  # Fetch all events from the database
+    events = await get_events(conn)
     today = datetime.now().date()
     return templates.TemplateResponse("events.html", {"request": request, "events": events, "today":today})
 
@@ -178,6 +202,8 @@ async def add_event_form(request: Request, conn=Depends(get_db_connection_depend
     teams = await get_teams(conn)
     venues = await get_venues(conn)
     return templates.TemplateResponse("add_event.html", {"request": request, "teams": teams, "venues": venues, "message": message})
+
+
 
 @app.get("/", response_class=HTMLResponse)
 async def read_events(request: Request, session_id: str = Cookie(None), conn=Depends(get_db_connection_dependency)):

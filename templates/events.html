@@ -91,66 +91,88 @@
         .team-name {
             font-weight: bold;
         }
+
+        /* Section Styles */
+        .section-title {
+            margin-top: 30px;
+            font-size: 1.5em;
+            color: #333;
+            font-weight: bold; /* Bold title for better visibility */
+        }
     </style>
 </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-    <h2>Backend</h2>
-    <a href="/">
-        <span>🏠 Home</span>
-    </a>
-    <a href="/events">
-        <span>📅 Events</span>
-    </a>
-    <a href="/add-event">
-        <span>➕ Add Event</span>
-    </a>
-    <a href="/docs" target="_blank">
-        <span>📚 API Docs</span>
-    </a>
-</div>
+    <div class="sidebar">
+        <h2>Backend</h2>
+        <a href="/" >
+            🏠 <span>Home</span>
+        </a>
+        <a href="/events" >
+            📅 <span>Events</span>
+        </a>
+        <a href="/add-event" >
+            ➕ <span>Add Event</span>
+        </a>
+        <a href="/docs" target="_blank" >
+            📚 <span>API Docs</span>
+        </a>
+    </div>
 
 <!-- Main Content -->
 <div class="main-content">
     <header>
-        <h1>Events 🎉</h1>
+        <h1>Events List</h1>
     </header>
 
-    <h2>Upcoming Events</h2>
+    <!-- Upcoming Events Section -->
+    <div class="section-title">Upcoming Events 🎉</div>
     <div class="event-list">
         {% for event in events %}
-            {% if event.event_date >= today %}
+            {% if event.is_upcoming %}
                 <div class="event-card">
-                    <p><strong>{{ event.event_date.strftime('%B %d') }} at {{ event.event_time.strftime('%H:%M') }}</strong></p>
-                    <p><strong>{{ event.home_team }}</strong> vs <strong>{{ event.away_team }}</strong></p>
-                    <p><strong>{{ event.venue_name }}</strong></p>
+                    <h5>{{ event.sport_type }}</h5>
+                    <p class="date-time">
+                        <strong>Date:</strong> {{ event.event_date.strftime('%d %b. %y') }} <br>
+                        <strong>Time:</strong> {{ event.event_time.strftime('%I:%M %p') }}
+                    </p>
+                    <p>
+                        <strong class="team-name">{{ event.home_team_name }}</strong> vs 
+                        <strong class="team-name">{{ event.away_team_name }}</strong>
+                    </p>
+                    <p><strong>Venue:</strong> {{ event.venue_name }}</p>
                     {% if event.description %}
-                        <p>{{ event.description }}</p>
+                        <p><strong>Description:</strong> {{ event.description }}</p>
                     {% endif %}
                 </div>
             {% endif %}
         {% endfor %}
     </div>
 
-    <h2>Previous Events</h2>
+    <!-- Previous Events Section -->
+    <div class="section-title">Previous Events</div>
     <div class="event-list">
         {% for event in events %}
-            {% if event.event_date < today %}
+            {% if not event.is_upcoming %}
                 <div class="event-card">
-                    <p><strong>{{ event.event_date.strftime('%B %d') }} at {{ event.event_time.strftime('%H:%M') }}</strong></p>
-                    <p><strong>{{ event.home_team }}</strong> vs <strong>{{ event.away_team }}</strong></p>
-                    <p><strong>{{ event.venue_name }}</strong></p>
+                    <h5>{{ event.sport_type }}</h5>
+                    <p class="date-time">
+                        <strong>Date:</strong> {{ event.event_date.strftime('%d %b. %y') }} <br>
+                        <strong>Time:</strong> {{ event.event_time.strftime('%I:%M %p') }}
+                    </p>
+                    <p>
+                        <strong class="team-name">{{ event.home_team_name }}</strong> vs 
+                        <strong class="team-name">{{ event.away_team_name }}</strong>
+                    </p>
+                    <p><strong>Venue:</strong> {{ event.venue_name }}</p>
                     {% if event.description %}
-                        <p>{{ event.description }}</p>
+                        <p><strong>Description:</strong> {{ event.description }}</p>
                     {% endif %}
                 </div>
             {% endif %}
         {% endfor %}
     </div>
 </div>
-
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>

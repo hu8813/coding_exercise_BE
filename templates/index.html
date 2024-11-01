@@ -14,32 +14,43 @@
         }
 
         /* Sidebar Styles */
-        .sidebar {
-            width: 250px;
-            background-color: #007BFF;
-            color: white;
-            padding: 20px;
-            height: 100vh;
-            position: fixed;
-        }
+    .sidebar {
+        width: 250px;
+        background-color: #343a40; /* Dark background consistent with Bootstrap's dark theme */
+        color: white; /* Set default text color to white */
+        padding: 20px;
+        height: 100vh;
+        position: fixed;
+    }
 
-        .sidebar h2 {
-            margin-top: 0;
-        }
+    .sidebar h2 {
+        margin-top: 0;
+        color: #ffffff; /* Ensure the header text is white */
+    }
 
-        .sidebar a {
-            display: block;
-            color: white;
-            text-decoration: none;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
+    .sidebar a {
+        display: flex;
+        align-items: center;
+        color: #f8f9fa; /* Light color for links */
+        text-decoration: none;
+        padding: 10px 15px; /* Add extra padding for better click area */
+        margin: 10px 0;
+        border-radius: 5px;
+        transition: background-color 0.3s, color 0.3s; /* Added transition for color */
+    }
 
-        .sidebar a:hover {
-            background-color: #0056b3;
-        }
+    /* Hover state for links */
+    .sidebar a:hover {
+        background-color: #495057; /* Darker background on hover */
+        color: #ffffff; /* Ensure text remains white on hover */
+    }
+
+    /* Active link style (optional) */
+    .sidebar a.active {
+        background-color: #007BFF; /* Highlight active link */
+        color: white; /* Ensure text remains white for active link */
+    }
+
 
         /* Main Content Styles */
         .main-content {
@@ -49,22 +60,22 @@
         }
 
         header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+            display: flex;                    /* Use flexbox for alignment */
+            justify-content: center;          /* Center the flex items horizontally */
+            align-items: center;              /* Center the flex items vertically */
+            margin-bottom: 20px;              /* Maintain bottom margin for spacing */
         }
-
-        /* Month-Year Navigation Styles */
+        
         .month-navigation {
-            display: flex;
-            align-items: center;
+            display: flex;                    /* Keep the month navigation as a flex container */
+            align-items: center;              /* Center items vertically */
         }
-
+        
         .month-navigation h2 {
-            font-size: 1.2rem;
-            margin: 0 10px;
+            font-size: 1.5rem;                /* Increased font size for better visibility */
+            margin: 0 20px;                   /* Add some horizontal margin for spacing */
         }
+        
 
         .month-navigation button {
             background-color: #007BFF;
@@ -155,48 +166,12 @@
     <script>
         let currentYear;
         let currentMonth;
-        let teams = {};
-        let venues = {};
 
         async function loadCalendar() {
             const today = new Date();
             currentYear = today.getFullYear();
             currentMonth = today.getMonth();
-
-            await loadTeamsAndVenues();
             await loadEventsAndGenerateCalendar();
-        }
-
-        async function loadTeamsAndVenues() {
-            try {
-                const teamsResponse = await fetch('/api/teams');
-                teams = await teamsResponse.json(); // Store teams in the global variable
-
-                const venuesResponse = await fetch('/api/venues');
-                venues = await venuesResponse.json(); // Store venues in the global variable
-
-                // Populate teams dropdown
-                const teamsDropdown = document.getElementById('teams-dropdown');
-                teamsDropdown.innerHTML = '<option value="">Teams</option>'; // Clear previous items
-                teams.forEach(team => {
-                    const option = document.createElement('option');
-                    option.value = team.id; // Assuming each team has a unique ID
-                    option.textContent = team.name;
-                    teamsDropdown.appendChild(option);
-                });
-
-                // Populate venues dropdown
-                const venuesDropdown = document.getElementById('venues-dropdown');
-                venuesDropdown.innerHTML = '<option value="">Venues</option>'; // Clear previous items
-                venues.forEach(venue => {
-                    const option = document.createElement('option');
-                    option.value = venue.id; // Assuming each venue has a unique ID
-                    option.textContent = venue.name;
-                    venuesDropdown.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error loading teams and venues:', error);
-            }
         }
 
         async function loadEventsAndGenerateCalendar() {
@@ -251,26 +226,16 @@
             eventDetails.innerHTML = ''; // Clear previous details
             
             events.forEach(event => {
-                // Find the home and away teams, and the venue
-                const homeTeam = teams.find(team => team.team_id === event.home_team_id);
-                const awayTeam = teams.find(team => team.team_id === event.away_team_id);
-                const venue = venues.find(venue => venue.venue_id === event.venue_id);
-        
-                // Format the event details
+                // Use team and venue names directly from the event data
                 const eventDetail = document.createElement('div');
                 const eventDate = new Date(`${event.event_date}T${event.event_time}`); // Create date object for formatting
                 const formattedDate = eventDate.toLocaleString('en-US', { day: 'numeric', month: 'long', hour: 'numeric', minute: 'numeric', hour12: false }).replace(',', ''); // Format as "20 Nov 17:05"
                 
-                // Prepare the text display
-                const homeTeamName = homeTeam ? homeTeam.name : '';
-                const awayTeamName = awayTeam ? awayTeam.name : '';
-                const venueName = venue ? venue.name : '';
-                
-                // Create readable format
+                // Prepare the text display using directly provided names
                 eventDetail.innerHTML = `
                     <p>${formattedDate}</p>
-                    <p>${homeTeamName} vs ${awayTeamName}</p>
-                    <p>${venueName}</p>
+                    <p>${event.home_team_name} vs ${event.away_team_name}</p>
+                    <p>${event.venue_name}</p>
                     <p>${event.description || ''}</p> <!-- Show empty text if description is not available -->
                     <hr>
                 `;
@@ -319,19 +284,19 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <div class="sidebar" style="background-color: #f4f4f4; padding: 20px; width: 250px; border-right: 1px solid #ddd;">
-        <h2 style="font-size: 1.5em; color: #333;">Backend</h2>
-        <a href="/" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
-            🏠 <span style="margin-left: 8px;">Home</span>
+    <div class="sidebar">
+        <h2>Backend</h2>
+        <a href="/" >
+            🏠 <span>Home</span>
         </a>
-        <a href="/events" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
-            📅 <span style="margin-left: 8px;">Events</span>
+        <a href="/events" >
+            📅 <span>Events</span>
         </a>
-        <a href="/add-event" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
-            ➕ <span style="margin-left: 8px;">Add Event</span>
+        <a href="/add-event" >
+            ➕ <span>Add Event</span>
         </a>
-        <a href="/docs" target="_blank" style="display: flex; align-items: center; text-decoration: none; color: #333; padding: 10px; border-radius: 4px; transition: background-color 0.3s;">
-            📚 <span style="margin-left: 8px;">API Docs</span>
+        <a href="/docs" target="_blank" >
+            📚 <span>API Docs</span>
         </a>
     </div>
 
@@ -340,7 +305,6 @@
             <h2>Welcome to the Sports Events Calendar!</h2>
             <p>Check out the upcoming events and manage your schedule effectively.</p>
         </div>
-
         <header>
             <div class="month-navigation">
                 <button onclick="prevMonth()">◀️ Previous</button>
@@ -348,14 +312,9 @@
                 <button onclick="nextMonth()">Next ▶️</button>
             </div>
         </header>
+        
 
         <div id="calendar" class="calendar"></div>
-        
-        <h2>Teams</h2>
-        <select id="teams-dropdown"></select>  
-    
-        <h2>Venues</h2>
-        <select id="venues-dropdown"></select> 
 
         <div id="eventModal" class="modal">
             <div class="modal-content">
