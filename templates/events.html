@@ -14,7 +14,7 @@
             margin: 0;
             display: flex;
         }
-
+    
         /* Sidebar Styles */
         .sidebar {
             width: 250px;
@@ -24,12 +24,12 @@
             height: 100vh;
             position: fixed;
         }
-
+    
         .sidebar h2 {
             margin-top: 0;
             color: #ffffff;
         }
-
+    
         .sidebar a {
             display: flex;
             align-items: center;
@@ -40,32 +40,32 @@
             border-radius: 5px;
             transition: background-color 0.3s;
         }
-
+    
         .sidebar a:hover {
             background-color: #495057;
         }
-
+    
         /* Main Content Styles */
         .main-content {
             margin-left: 270px;
             padding: 20px;
             flex: 1;
         }
-
+    
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-
+    
         /* Events List Styles */
         .event-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
-
+    
         .event-card {
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -73,26 +73,27 @@
             padding: 15px;
             transition: box-shadow 0.3s;
             position: relative; /* For positioning the icons */
-            color: #ffffff; /* Change text color to white for better contrast */
+            color: #ffffff; /* Ensure all text is readable on colored backgrounds */
+            background-color: #424242
         }
-
+    
         .event-card:hover {
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
-
+    
         .event-card h5 {
             color: #ffffff;
         }
-
+    
         .date-time {
             font-size: 0.9em;
-            color: #ddd; /* Lighter text for better readability */
+            color: #f0f0f0;
         }
-
+    
         .team-name {
             font-weight: bold;
         }
-
+    
         /* Section Styles */
         .section-title {
             margin-top: 30px;
@@ -100,51 +101,56 @@
             color: #333;
             font-weight: bold;
         }
-
+    
         /* Icon Styles */
         .event-icons {
             position: absolute;
             top: 10px;
             right: 10px;
         }
-
+    
         .event-icons i {
             margin-left: 10px;
             cursor: pointer; /* Change cursor to pointer */
         }
-
+    
         .event-icons i:hover {
             color: #007bff; /* Change color on hover */
         }
-
+    
         /* Additional Icon Styles */
         .icon {
             margin-right: 5px; /* Spacing for icons */
         }
-
-        /* Sport Color Classes */
-        .football { background-color: #2E7D32; } /* Dark Green */
-        .basketball { background-color: #BF360C; } /* Dark Orange */
-        .cricket { background-color: #ababab; } /* Dark Orange */
-        .tennis { background-color: #FF6F00; color: #333; } /* Darker Yellow */
-        .hockey { background-color: #ffb100; } /* Dark Purple */
-        .rugby-union { background-color: #B71C1C; } /* Dark Red */
-        .beach-volleyball { background-color: #F57F17; } /* Amber */
-        .professional-golf { background-color: #1B5E20; } /* Forest Green */
-        .international-badminton { background-color: #FBC02D; } /* Golden Yellow */
-        .olympic-table-tennis { background-color: #E64A19; } /* Deep Orange */
-        .olympic-swimming { background-color: #00796B; } /* Teal */
-        .professional-cycling { background-color: #FFD600; } /* Bright Yellow */
-        .volleyball { background-color: #8E24AA; } /* Dark Purple */
-        .rugby { background-color: #C2185B; } /* Pink */
-        .handball { background-color: #0288D1; } /* Light Blue */
-        .table-tennis { background-color: #D32F2F; } /* Dark Red */
-        .badminton { background-color: #388E3C; } /* Dark Green */
-        .golf { background-color: #FFB300; } /* Gold */
-        .lacrosse { background-color: #6A1B9A; } /* Purple */
-
+    
+        /* Sport Color Classes with adjusted contrast */
+        .football { background-color: #2E7D32; color: #FFFFFF; } /* Slightly brighter green */
+        .basketball { background-color: #D84315; color: #FFFFFF; } /* Dark orange */
+        .cricket { background-color: #424242; color: #FFFFFF; } /* Light black */
+        .tennis { background-color: #EF6C00; color: #FFFFFF; } /* Darker orange */
+        .hockey { background-color: #FFA000; color: #FFFFFF; } /* Dark yellow */
+        .rugby-union { background-color: #8E0000; color: #FFFFFF; } /* Deep maroon */
+        .beach-volleyball { background-color: #FB8C00; color: #FFFFFF; } /* Bright amber */
+        .professional-golf { background-color: #1B5E20; color: #FFFFFF; } /* Dark forest green */
+        .international-badminton { background-color: #C0A068; color: #FFFFFF; } /* Soft brown */
+        .olympic-table-tennis { background-color: #C65F47; color: #FFFFFF; } /* Soft coral */
+        .olympic-swimming { background-color: #00796B; color: #FFFFFF; } /* Teal */
+        .professional-cycling { background-color: #A87E0B; color: #FFFFFF; } /* Warm golden brown */
+        .volleyball { background-color: #7B1FA2; color: #FFFFFF; } /* Purple */
+        .rugby { background-color: #B71C1C; color: #FFFFFF; } /* Deep red */
+        .handball { background-color: #1565C0; color: #FFFFFF; } /* Bright blue */
+        .table-tennis { background-color: #D32F2F; color: #FFFFFF; } /* Bright red */
+        .badminton { background-color: #33691E; color: #FFFFFF; } /* Olive green */
+        .golf { background-color: #6D4C41; color: #FFFFFF; } /* Brown */
+        .lacrosse { background-color: #8E24AA; color: #FFFFFF; } /* Bright purple */
+        .default-sport {
+            background-color: #546E7A; /* Slate gray */
+            color: #FFFFFF; /* White text for contrast */
+        }
     </style>
+    
 </head>
+
 <body>
     <div class="sidebar">
         <h2>Backend</h2>
@@ -160,31 +166,63 @@
             <h1>Events List</h1>
         </header>
 
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <h4>Filter events by...</h4>
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="teamFilter">Team</label>
+                    <select id="teamFilter" class="form-control" onchange="filterEvents()">
+                        <option value="">All Teams</option>
+                        {% for team in teams %}
+                            <option value="{{ team.name }}">{{ team.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="venueFilter">Venue</label>
+                    <select id="venueFilter" class="form-control" onchange="filterEvents()">
+                        <option value="">All Venues</option>
+                        {% for venue in venues %}
+                            <option value="{{ venue.name }}">{{ venue.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="sportFilter">Sport</label>
+                    <select id="sportFilter" class="form-control" onchange="filterEvents()">
+                        <option value="">All Sports</option>
+                        {% for sport in sports %}
+                            <option value="{{ sport.name }}">{{ sport.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+
         <!-- Upcoming Events Section -->
         <div class="section-title">Upcoming Events 🎉</div>
-        <div class="event-list">
+        <div class="event-list" id="upcomingEventsList">
             {% for event in events %}
                 {% if event.is_upcoming %}
-                    <div class="event-card tennis  {{ event.sport_name | lower }}">
+                    <div class="event-card {{ event.sport_name | lower | default('default-sport') }}" 
+                         data-team="{{ event.home_team_name }} {{ event.away_team_name }}" 
+                         data-venue="{{ event.venue_name }}" 
+                         data-sport="{{ event.sport_name }}">
+                         
+                        <h5>{{ event.home_team_name }} vs {{ event.away_team_name }}</h5>
+                        <p class="date-time">{{ event.event_date }} at {{ event.event_time }}</p>
+                        <p class="venue">{{ event.venue_name }}</p>
+                        
+                        <!-- Display Sport Type -->
+                        <p class="sport-type">Sport: {{ event.sport_name or "Other" }}</p>
+
+                        <!-- Edit/Delete Icons -->
                         <div class="event-icons">
-                            <i class="fas fa-edit" onclick="editEvent('{{ event.id }}')"></i>
-                            <i class="fas fa-trash-alt" onclick="deleteEvent('{{ event.id }}')"></i>
+                            <i class="fas fa-edit" title="Edit"></i>
+                            <i class="fas fa-trash-alt" title="Delete"></i>
                         </div>
-                        <h5>{{ event.sport_name }}</h5>
-                        <p class="date-time">
-                             <i class="fas fa-calendar-alt icon"></i>{{ event.event_date.strftime('%d %b. %y') }} 
-                             <i class="fas fa-clock icon"></i>{{ event.event_time.strftime('%I:%M %p') }}
-                        </p>
-                        <p>
-                            <strong class="team-name">{{ event.home_team_name }}</strong> vs 
-                            <strong class="team-name">{{ event.away_team_name }}</strong>
-                        </p>
-                        <p>
-                            <i class="fas fa-map-marker-alt icon"></i>{{ event.venue_name }}
-                        </p>
-                        {% if event.description %}
-                            <p>{{ event.description }}</p>
-                        {% endif %}
                     </div>
                 {% endif %}
             {% endfor %}
@@ -192,29 +230,26 @@
 
         <!-- Previous Events Section -->
         <div class="section-title">Previous Events</div>
-        <div class="event-list">
+        <div class="event-list" id="previousEventsList">
             {% for event in events %}
                 {% if not event.is_upcoming %}
-                    <div class="event-card {{ event.sport_name | lower }}">
+                    <div class="event-card {{ event.sport_name | lower | default('default-sport') }}" 
+                         data-team="{{ event.home_team_name }} {{ event.away_team_name }}" 
+                         data-venue="{{ event.venue_name }}" 
+                         data-sport="{{ event.sport_name }}">
+                         
+                        <h5>{{ event.home_team_name }} vs {{ event.away_team_name }}</h5>
+                        <p class="date-time">{{ event.event_date }} at {{ event.event_time }}</p>
+                        <p class="venue">{{ event.venue_name }}</p>
+                        
+                        <!-- Display Sport Type -->
+                        <p class="sport-type">{{ event.sport_name or "Other" }}</p>
+
+                        <!-- Edit/Delete Icons -->
                         <div class="event-icons">
-                            <i class="fas fa-edit" onclick="editEvent('{{ event.id }}')"></i>
-                            <i class="fas fa-trash-alt" onclick="deleteEvent('{{ event.id }}')"></i>
+                            <i class="fas fa-edit" title="Edit"></i>
+                            <i class="fas fa-trash-alt" title="Delete"></i>
                         </div>
-                        <h5>{{ event.sport_name }}</h5>
-                        <p class="date-time">
-                             <i class="fas fa-calendar-alt icon"></i>{{ event.event_date.strftime('%d %b. %y') }} 
-                             <i class="fas fa-clock icon"></i>{{ event.event_time.strftime('%I:%M %p') }}
-                        </p>
-                        <p>
-                            <strong class="team-name">{{ event.home_team_name }}</strong> vs 
-                            <strong class="team-name">{{ event.away_team_name }}</strong>
-                        </p>
-                        <p>
-                            <i class="fas fa-map-marker-alt icon"></i>{{ event.venue_name }}
-                        </p>
-                        {% if event.description %}
-                            <p>{{ event.description }}</p>
-                        {% endif %}
                     </div>
                 {% endif %}
             {% endfor %}
@@ -225,28 +260,38 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        // JavaScript functions to handle edit and delete actions
-        function editEvent(eventId) {
-            // Redirect to the edit event page (replace with your actual edit URL)
-            window.location.href = `/edit-event/${eventId}`;
+        function filterEvents() {
+            // Get the selected filter values
+            const selectedTeam = document.getElementById('teamFilter').value.toLowerCase();
+            const selectedVenue = document.getElementById('venueFilter').value.toLowerCase();
+            const selectedSport = document.getElementById('sportFilter').value.toLowerCase();
+
+            // Filter upcoming events
+            const upcomingEvents = document.getElementById('upcomingEventsList').children;
+            filterEventList(upcomingEvents, selectedTeam, selectedVenue, selectedSport);
+
+            // Filter previous events
+            const previousEvents = document.getElementById('previousEventsList').children;
+            filterEventList(previousEvents, selectedTeam, selectedVenue, selectedSport);
         }
 
-        function deleteEvent(eventId) {
-            // Confirmation before deletion
-            if (confirm('Are you sure you want to delete this event?')) {
-                // Send a delete request to the server (replace with your actual delete URL)
-                fetch(`/api/events/${eventId}`, {
-                    method: 'DELETE'
-                }).then(response => {
-                    if (response.ok) {
-                        alert('Event deleted successfully.');
-                        window.location.reload(); // Refresh the page to see the changes
-                    } else {
-                        alert('Failed to delete the event. Please try again.');
-                    }
-                }).catch(error => {
-                    alert('An error occurred. Please try again.');
-                });
+        function filterEventList(events, selectedTeam, selectedVenue, selectedSport) {
+            for (let event of events) {
+                const eventTeam = event.getAttribute('data-team').toLowerCase();
+                const eventVenue = event.getAttribute('data-venue').toLowerCase();
+                const eventSport = event.getAttribute('data-sport').toLowerCase();
+
+                // Check if the event matches all selected filters
+                const matchesTeam = !selectedTeam || eventTeam.includes(selectedTeam);
+                const matchesVenue = !selectedVenue || eventVenue.includes(selectedVenue);
+                const matchesSport = !selectedSport || eventSport.includes(selectedSport);
+
+                // Show or hide the event based on filter matching
+                if (matchesTeam && matchesVenue && matchesSport) {
+                    event.style.display = "block";
+                } else {
+                    event.style.display = "none";
+                }
             }
         }
     </script>

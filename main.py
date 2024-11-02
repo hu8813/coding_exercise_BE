@@ -174,8 +174,12 @@ async def get_events(conn):
 @app.get("/events", response_class=HTMLResponse)
 async def view_events(request: Request, conn=Depends(get_db_connection_dependency)):
     events = await get_events(conn)
+    teams = await get_teams(conn)
+    venues = await get_venues(conn)
+    sports = await get_sports(conn) 
     today = datetime.now().date()
-    return templates.TemplateResponse("events.html", {"request": request, "events": events, "today":today})
+    
+    return templates.TemplateResponse("events.html", {"request": request, "events": events, "today":today, "teams": teams, "venues": venues, "sports": sports})
 
 
 @app.get("/api/events", response_model=List[dict])
