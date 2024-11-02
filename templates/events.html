@@ -154,7 +154,7 @@
     </style>
 </head>
 
-<body>
+<body onload="formatEventDates();">
     <div class="sidebar">
         <h2>Backend</h2>
         <a href="/">🏠 <span>Home</span></a>
@@ -217,7 +217,11 @@
                         <h5>{{ event.home_team_name }} vs {{ event.away_team_name }}</h5>
             
                         <!-- Date and Time with Icon -->
-                        <p class="date-time"><i class="fas fa-clock"></i> {{ event.event_date }} at {{ event.event_time }}</p>
+                        <p class="date-time">
+                            <i class="fas fa-clock"></i> 
+                            <span class="event-date" data-date="{{ event.event_date }}">{{ event.event_date }}</span> 
+                        </p>
+                        
             
                         <!-- Venue with Icon -->
                         <p class="date-time"><i class="fas fa-map-marker-alt"></i> {{ event.venue_name }}</p>
@@ -257,7 +261,11 @@
                         <h5>{{ event.home_team_name }} vs {{ event.away_team_name }}</h5>
             
                         <!-- Date and Time with Icon -->
-                        <p class="date-time"><i class="fas fa-clock"></i> {{ event.event_date }} at {{ event.event_time }}</p>
+                        <p class="date-time">
+                            <i class="fas fa-clock"></i> 
+                            <span class="event-date" data-date="{{ event.event_date }}">{{ event.event_date }}</span> 
+                        </p>
+                        
             
                         <!-- Venue with Icon -->
                         <p class="date-time"><i class="fas fa-map-marker-alt"></i> {{ event.venue_name }}</p>
@@ -285,12 +293,34 @@
     </div>
 
     <script>
+        function formatEventDates() {
+            const eventDates = document.querySelectorAll('.event-date');
+            
+            eventDates.forEach(dateElement => {
+                const dateStr = dateElement.getAttribute('data-date'); // Get the original date string
+                const date = new Date(dateStr); // Convert to Date object
+        
+                // Extract parts of the date
+                const day = date.getDate(); // Day of the month
+                const month = date.toLocaleString('default', { month: 'short' }); // Short month name
+                const year = date.getFullYear().toString().slice(-2); // Last two digits of the year
+                const hours = String(date.getHours()).padStart(2, '0'); // Hours with leading zero
+                const minutes = String(date.getMinutes()).padStart(2, '0'); // Minutes with leading zero
+        
+                // Combine into desired format
+                const formattedDate = `${day} ${month} '${year} at ${hours}:${minutes}`;
+        
+                // Update the text content of the span with the formatted date
+                dateElement.textContent = formattedDate;
+            });
+        }
         function toggleEventDetails(card) {
             const details = card.querySelector('.event-details');
             details.style.display = details.style.display === 'none' || details.style.display === '' ? 'block' : 'none';
         }
 
         function filterEvents() {
+            
             const teamFilter = document.getElementById('teamFilter').value.toLowerCase();
             const venueFilter = document.getElementById('venueFilter').value.toLowerCase();
             const sportFilter = document.getElementById('sportFilter').value.toLowerCase();
