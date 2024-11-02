@@ -224,20 +224,19 @@
             
                         <!-- Event Details Section -->
                         <div class="event-details">
-                            <p><strong>Details:</strong> {{ event.details }}</p>
-                            <p><strong>Sport:</strong> {{ event.sport_name }}</p>
-                            <p><strong>Venue:</strong> {{ event.venue_name }}</p>
-                            <p><strong>Teams:</strong> {{ event.home_team_name }} vs {{ event.away_team_name }}</p>
+                            <p><strong></strong> {{ event.details }}</p>
+                            <p><strong></strong> {{ event.sport_name }}</p>
+                            <div class="event-icons">
+                                <i class="fas fa-info-circle" title="Details"></i>
+                                <i class="fas fa-heart" title="Favorite"></i>
+                                <i class="fas fa-share" title="Share"></i>
+                                <i class="fas fa-edit" title="Edit" onclick="editEvent('{{ event.id }}')"></i>
+                                <i class="fas fa-trash" title="Delete" onclick="deleteEvent('{{ event.id }}')"></i>
+                            </div>
                         </div>
 
                         <!-- Icons for Event Actions at the Bottom -->
-                        <div class="event-icons">
-                            <i class="fas fa-info-circle" title="Details"></i>
-                            <i class="fas fa-heart" title="Favorite"></i>
-                            <i class="fas fa-share" title="Share"></i>
-                            <i class="fas fa-edit" title="Edit" onclick="editEvent('{{ event.id }}')"></i>
-                            <i class="fas fa-trash" title="Delete" onclick="deleteEvent('{{ event.id }}')"></i>
-                        </div>
+                       
                     </div>
                 {% endif %}
             {% endfor %}
