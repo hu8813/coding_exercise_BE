@@ -42,8 +42,8 @@ The application includes the following tables:
 1. **Set Up a Virtual Environment**
    ```
    python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-```
+   source venv/bin/activate  # On Windows use venv\Scripts\activate```
+
 
 ### Install Dependencies
 
@@ -57,8 +57,9 @@ pip install -r requirements.txt
 
   ```
   DATABASE_URL=postgresql://<username>:<password>@<hostname>:<port>/<database_name>?sslmode=require
-  ADMIN_PWD=adminPasswordForBackend
+  ADMIN_PWD=demo123
   ```
+  
 ### Run the Application
 You can run the application using either of the following commands:
 
