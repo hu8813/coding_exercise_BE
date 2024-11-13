@@ -42,13 +42,16 @@ The application includes the following tables:
 - Install Python 3 and venv if needed (Linux example):
 
 ```
-sudo apt install python3.12-venv```
+sudo apt install python3.12-venv
+```
 
 
 1. **Set Up a Virtual Environment**
+
    ```
    python3 -m venv venv
-   source venv/bin/activate  # On Windows use venv\Scripts\activate```
+   source venv/bin/activate  # On Windows use venv\Scripts\activate
+   ```
 
 
 ### Install Dependencies
