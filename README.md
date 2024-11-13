@@ -37,11 +37,17 @@ The application includes the following tables:
 
 
 
-### Set Up a Virtual Environment
+### Set Up a Virtual Environment (optional)
+
+- Install Python 3 and venv if needed (Linux example):
+
+```
+sudo apt install python3.12-venv```
+
 
 1. **Set Up a Virtual Environment**
    ```
-   python -m venv venv
+   python3 -m venv venv
    source venv/bin/activate  # On Windows use venv\Scripts\activate```
 
 
