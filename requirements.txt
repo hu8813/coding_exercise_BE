@@ -1,9 +1,5 @@
 fastapi
 uvicorn
-sqlalchemy[asyncio]
-psycopg2-binary
 asyncpg
 python-dotenv
 jinja2
-python-multipart
-httpx
