@@ -59,12 +59,12 @@ async def initialize_database(conn):
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS events (
                 event_id SERIAL PRIMARY KEY,
-                sport_type INTEGER NOT NULL REFERENCES sports(sport_id) ON DELETE CASCADE,
+                _sport_type INTEGER NOT NULL REFERENCES sports(sport_id) ON DELETE CASCADE,
                 event_date DATE NOT NULL,
                 event_time TIME NOT NULL,
-                home_team_id INTEGER REFERENCES teams(team_id),
-                away_team_id INTEGER REFERENCES teams(team_id),
-                venue_id INTEGER REFERENCES venues(venue_id),
+                _home_team_id INTEGER REFERENCES teams(team_id),
+                _away_team_id INTEGER REFERENCES teams(team_id),
+                _venue_id INTEGER REFERENCES venues(venue_id),
                 description TEXT
             );
         """)
@@ -141,10 +141,10 @@ async def get_events(conn):
            v.name AS venue_name, 
            e.description
     FROM events e
-    JOIN sports s ON e.sport_type = s.sport_id  -- Join with sports table to get the sport name
-    JOIN teams t1 ON e.home_team_id = t1.team_id
-    JOIN teams t2 ON e.away_team_id = t2.team_id
-    JOIN venues v ON e.venue_id = v.venue_id
+    JOIN sports s ON e._sport_type = s.sport_id  -- Join with sports table to get the sport name
+    JOIN teams t1 ON e._home_team_id = t1.team_id
+    JOIN teams t2 ON e._away_team_id = t2.team_id
+    JOIN venues v ON e._venue_id = v.venue_id
     ORDER BY e.event_date, e.event_time;
     """
     
@@ -201,13 +201,13 @@ async def get_all_venues(conn=Depends(get_db_connection_dependency)):
 async def get_event_details(event_id: int, conn=Depends(get_db_connection_dependency)):
     try:
         event = await conn.fetchrow(""" 
-            SELECT e.event_id, e.sport_type, e.event_date, e.event_time,
+            SELECT e.event_id, e._sport_type, e.event_date, e.event_time,
                    ht.name as home_team, at.name as away_team,
                    v.name as venue_name, e.description
             FROM events e
-            LEFT JOIN teams ht ON e.home_team_id = ht.team_id
-            LEFT JOIN teams at ON e.away_team_id = at.team_id
-            LEFT JOIN venues v ON e.venue_id = v.venue_id
+            LEFT JOIN teams ht ON e._home_team_id = ht.team_id
+            LEFT JOIN teams at ON e._away_team_id = at.team_id
+            LEFT JOIN venues v ON e._venue_id = v.venue_id
             WHERE e.event_id = $1
         """, event_id)
 
@@ -293,7 +293,7 @@ async def create_event(
         # Insert event into events table with sport_type as the foreign key to sports
         await conn.execute(
             """
-            INSERT INTO events (sport_type, event_date, event_time, home_team_id, away_team_id, venue_id, description)
+            INSERT INTO events (_sport_type, event_date, event_time, _home_team_id, _away_team_id, _venue_id, description)
             VALUES ($1, $2, $3, $4, $5, $6, $7)
             """,
             sport_type, event_date_obj, event_time_obj, home_team_id, away_team_id, venue_id, description
