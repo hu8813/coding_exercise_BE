@@ -243,8 +243,18 @@ async def create_event(
         # Use the add_sport function to get sport ID
         sport_type = await add_sport(conn, sport_custom)
     elif sport_type is not None:
-        # Ensure sport_type is an integer ID if it's not custom
-        sport_type = int(sport_type)
+        query = """
+        SELECT sport_id FROM sports WHERE name = $1
+        """
+        sport_id = await conn.fetchval(query, sport_type)
+        
+        if sport_id is not None:
+            sport_type = sport_id
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Sport '{sport_type}' not found in the database. Please provide a valid sport name from the dropdown."
+            )
 
     # Handle home team
     if home_custom:
